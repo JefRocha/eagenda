@@ -1,0 +1,71 @@
+Atualizar banco de dados:
+npx drizzle-kit push 
+
+Formatar trecho específico:
+ctrl+k - Prompt:
+Formate este telefone. exemplo de valor:34999664356. Eu quero que seja exibido como: (34) 99966-4356  
+
+Criar ação de excluir usando IA:
+Adione o código a IA. Prompt: Ao clicar no totão "Excluir" exiba um AlertDialog. Ao confirmar a exclusão, uma server action deve ser chamada. Ela vai deletar o paciente no banco de dados. Exemplo: @doctor-card.tsx
+
+Criar tela de Agendamento: 
+Prompt: Crie uma página de agendamentos. Essa página deve ter um botão de "Novo Agendamento". Esse botão deve abrir um Dialog com um formulário de criação de um agendamento.
+Esse formulário terá os seguintes campos:
+- Select de pacientes: Recupere os pacientes do banco de dados na página de agendamentos, que vai ser um server componente e passe-os como prop para o formulário.
+- Select de médicos: Recupere os médicos do banco de dados na página de agendamentos, que vai ser um server componente e passe-os como prop para o formulário.
+- Valor da consulta. Deve ser um input monetário formatado, e só deve ser habilitado caso o médico já tenha sido selecionado O valor padrão de ser o valor da consulta do médico selecionado (campo AppointmentPrinceinnts" no banco de dados).
+- Data: Só estará habilitado ao selecionar paciente e médico. Use o componente:
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant={"outline"}
+          className={cn(
+            "w-[280px] justify-start text-left font-normal",
+            !date && "text-muted-foreground"
+          )}
+        >
+          <CalendarIcon className="mr-2 h-4 w-4" />
+          {date ? format(date, "PPP") : <span>Pick a date</span>}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0">
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={setDate}
+          initialFocus
+        />
+      </PopoverContent>
+    </Popover> 
+- Select de horários: Só deixe habilitado se o paciente e medico tiver sido selecionado. Deixe sem opções por enquanto.
+Não faça a listagem de agendamentos por enquanto. Apenas esse formulário de criação.
+
+
+
+Prompt ajustes de schemas:
+@schema.ts Ajuste o schema criando a tabela de exames com os seguitnes campos:  descricao: text(),
+validade: float(),
+valor: integer(),
+tipo: text(),
+validade1: float(),
+pedido: text(),
+codiemp: text(),
+codigo_anterior: text(), adricione os campos campos que estiverem faltando como ID, createdAt e updatedAt, faça os relacionamentos conforme demais tabelas
+
+Prompt criar Páginas:
+Crie uma página de exames. Essa página deve ter o botão de "Adicionar Exames". Esse botão abrirá um Dialog com um formulário de upsert. Esse formulário terá os seguintes campos:
+Descrição:
+Validade,
+Validade1,
+valor com mascara.Deve ser um input monetário formatado
+pedido: select com duas opções ("Sim" e "Não")
+Crie um componente "AddExameButton" que renderizará o componente "UpsertExameForm
+
+Ao enviar o formulário, chame uma nova server action, que vaifazer upsert do exame no banco de dados
+
+
+Prompt teste:
+Crie uma tela que exiba o histórico de consultas de um médico específico. Adicione nessa tela um Select(use o @select.tsx) que listará os médicos disponíveis. Ao selecionar um médico, faça o fetching das consultas dele e liste-as em uma tabela.
+Cada linha da tabela deve ter um botão que abrirá um dropdown, esse dropdown deve uma opção: Excluir. ao clicar nesse botão, use o React Query para deletar esse agendamento. Ao invés de criar uma rota, crie uma server action, como está no arquivo @upsert-doctor-form.tsx. A @page.tsx criada não pode ser um cliente component. Atualiza a página após deletar registros invalidando a query que obtém os agendamentos ao ser deletar com sucesso.  E use o React Query para chamar a Server Action.
+
+

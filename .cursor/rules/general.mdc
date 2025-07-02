@@ -16,6 +16,10 @@ Tecnologias e ferramentas utilizadas:
 - PostgreSQL como banco de dados
 - Drizzle com ORM
 
+Sobre minha aplicação:
+Se consiste em um sistema usado por clínicas, que podem criar médicos, pacientes e agendamentos. Nosso principal objetivo é dar para clínica um sistema completo de gestão da sua operação.
+
+
 Princípios Principais:
 
 - Escreva um código limpo, conciso e fácil de manter, seguindo princípios de SOLID e Clean Code.
@@ -28,15 +32,18 @@ React/Next.js
 - Sempre use Tailwind para estilização.
 - Use componentes de biblioteca shadcn/ui o máximo possível ao criar/modificar (veja https://ui.shadcn.com/ para a lista de componentes dispoíveis).
 - Sempre use Zod para validação de formulários.
-- Sempre use React Hook para criação e validação de formulários. Use o componente @form.tsx para criar esses formulários. @upsert-doctor-form.tsx.
+- Sempre use React Hook para criação e validação de formulários. Use o componente @form.tsx para criar esses formulários. Exemplo: @upsert-doctor-form.tsx.
 - Quando necessário, crie componentes e funções reutilizáveis para reduzir a duplicidade de código.
 - Quando um componente for utilizado apenas em uma página específica, rie-o na pasta "_components" dentro da pasta da respectiva página.
 - Sempre use a biblioteca "next-safe-action" ao criar com Server Actions. Use a Server Exemplo: [index.ts](mdc:src/actions/upsert-doctor/index.ts).
-- Sempre use o hook "useAction" da biblioteca "next-safe-action"  ao chamar Ser Actions em componentes. Exemplo:  [upsert-doctor-form.tsx](mdc:src/app/(protected)/doctors/_components/upsert-doctor-form.tsx).
+- Sempre use o hook "useAction" da biblioteca "next-safe-action"  ao chamar Ser Actions em componentes. Exemplo:  [upsert-patient-form.tsx](mdc:src/app/(protected)/patients/_components/upsert-patient-form.tsx)  /patient/_components/upsert-patient-form.tsx).
 - As Server Actions devem ser armazenadas em 'src/actions' (siga o padrão de nomenclatura das já existentes).
 - Sempre que for necessário interagir com o banco de dados, use o [index.ts](mdc:src/db/index.ts).
 - usamos a biblioteca "dayjs" para manipular e formatar datas.
-- ao criar páginas, use os componentes dentro de [page-container.tsx](mdc:src/components/ui/page-container.tsx) para manter os padrões de margin, padding e spacing nas páginas. Exemplo:  [page.tsx](mdc:src/app/(protected)/doctors/page.tsx).
+- ao criar páginas, use os componentes dentro de [page-container.tsx](mdc:src/components/ui/page-container.tsx) para manter os padrões de margin, padding e spacing nas páginas. Exemplo:  [page.tsx](mdc:src/app/(protected)/partients/page.tsx).
 - Sempre usar a biblioteca "react-number-format" ao criar máscaras para inputs.
+- Ao criar tabelas para listar dados, use o arquivo [page.tsx](mdc:src/app/(protected)/appointments/page.tsx) como referência. Sempre use o componente [data-table.tsx](mdc:src/components/ui/data-table.tsx) para isso. Sempre adiciona ordenação para todas as colunas da tabela.
+- Sempre use React Query para fazer data fetching em Client Components. Veja um exemplo em [add-appointment-form.tsx](mdc:src/app/(protected)/appointments/_components/add-appointment-form.tsx). Quando necessário interagir com recursos do servidor,  crie uma Server Action e a chame usando o React Query. 
+- Sempre que for preciso interagir com o banco de dados, veja o arquivo [schema.ts](mdc:src/db/schema.ts).
 
 

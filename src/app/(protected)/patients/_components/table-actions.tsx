@@ -38,7 +38,7 @@ const PatientsTableActions = ({ patient }: PatientsTableActionsProps) => {
 
   const deletePatientAction = useAction(deletePatient, {
     onSuccess: () => {
-      toast.success("Paciente deletado com sucesso.");
+      toast.success("Paciente excluiro com sucesso.");
     },
     onError: () => {
       toast.error("Erro ao deletar paciente.");
@@ -76,7 +76,7 @@ const PatientsTableActions = ({ patient }: PatientsTableActionsProps) => {
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>
-                    Tem certeza que deseja deletar esse paciente?
+                    Tem certeza que deseja excluir esse paciente?
                   </AlertDialogTitle>
                   <AlertDialogDescription>
                     Essa ação não pode ser revertida. Isso irá deletar o
@@ -86,7 +86,7 @@ const PatientsTableActions = ({ patient }: PatientsTableActionsProps) => {
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancelar</AlertDialogCancel>
                   <AlertDialogAction onClick={handleDeletePatientClick}>
-                    Deletar
+                    Excluir
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

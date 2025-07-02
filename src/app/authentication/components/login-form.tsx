@@ -70,12 +70,14 @@ const LoginForm = () => {
   };
 
   return (
-    <Card>
+    <Card className="border-none bg-black/15">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
           <CardHeader>
-            <CardTitle>Login</CardTitle>
-            <CardDescription>Faça login para continuar.</CardDescription>
+            <CardTitle className="text-gray-300">Login</CardTitle>
+            <CardDescription className="text-gray-300">
+              Faça login para continuar.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <FormField
@@ -83,7 +85,7 @@ const LoginForm = () => {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>E-mail</FormLabel>
+                  <FormLabel className="text-gray-300">E-mail</FormLabel>
                   <FormControl>
                     <Input placeholder="Digite seu e-mail" {...field} />
                   </FormControl>
@@ -96,7 +98,7 @@ const LoginForm = () => {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Senha</FormLabel>
+                  <FormLabel className="text-gray-300">Senha</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="Digite sua senha"

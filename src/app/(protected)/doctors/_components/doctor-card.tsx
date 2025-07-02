@@ -48,7 +48,7 @@ const DoctorCard = ({ doctor }: DoctorCardProps) => {
     useState(false);
   const deleteDoctorAction = useAction(deleteDoctor, {
     onSuccess: () => {
-      toast.success("Médico deletado com sucesso.");
+      toast.success("Médico excluido com sucesso.");
     },
     onError: () => {
       toast.error("Erro ao deletar médico.");
@@ -123,7 +123,7 @@ const DoctorCard = ({ doctor }: DoctorCardProps) => {
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>
-                Tem certeza que deseja deletar esse médico?
+                Tem certeza que deseja excluir esse médico?
               </AlertDialogTitle>
               <AlertDialogDescription>
                 Essa ação não pode ser revertida. Isso irá deletar o médico e
@@ -133,7 +133,7 @@ const DoctorCard = ({ doctor }: DoctorCardProps) => {
             <AlertDialogFooter>
               <AlertDialogCancel>Cancelar</AlertDialogCancel>
               <AlertDialogAction onClick={handleDeleteDoctorClick}>
-                Deletar
+                Excluir
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

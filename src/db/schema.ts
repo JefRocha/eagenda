@@ -9,6 +9,7 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
+//import { Inter_Tight } from "next/font/google";
 
 export const usersTable = pgTable("users", {
   id: text("id").primaryKey(),
@@ -16,6 +17,9 @@ export const usersTable = pgTable("users", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").notNull(),
   image: text("image"),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  plan: text("plan"),
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
 });
@@ -138,6 +142,38 @@ export const doctorsTableRelations = relations(
   }),
 );
 
+export const exametipoEnum = pgEnum("exame_tipo", [
+  "Admissional",
+  "Demissional",
+]);
+export const pedidoEnum = pgEnum("pedido", ["Sim", "Não"]);
+
+export const examesTable = pgTable("exames", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  clinicId: uuid("clinic_id")
+    .notNull()
+    .references(() => clinicsTable.id, { onDelete: "cascade" }),
+  descricao: text("descricao").notNull(),
+  validade: integer("validade").notNull(),
+  validade1: integer("validade1").notNull(),
+  valor: integer("valor").notNull(),
+  pedido: pedidoEnum("pedido").notNull(),
+  codigo_anterior: text("codigo_anterior"),
+  tipo: exametipoEnum("tipo").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export const examesTableRelations = relations(examesTable, ({ one, many }) => ({
+  clinic: one(clinicsTable, {
+    fields: [examesTable.clinicId],
+    references: [clinicsTable.id],
+  }),
+  appointments: many(appointmentsTable),
+}));
+
 export const patientSexEnum = pgEnum("patient_sex", ["male", "female"]);
 
 export const patientsTable = pgTable("patients", {
@@ -147,30 +183,29 @@ export const patientsTable = pgTable("patients", {
     .references(() => clinicsTable.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   email: text("email").notNull(),
-  endereco: text("endereco").notNull(),
-  numero: text("numero").notNull(),
-  complemento: text("complemento").notNull(),
-  bairro: text("bairro").notNull(),
-  cidade: text("cidade").notNull(),
-  uf: text("uf").notNull(),
-  cep: text("cep").notNull(),
-  telefone: text("telefone").notNull(),
-  celular: text("celular").notNull(),
-  cpf: text("cpf").notNull(),
-  rg: text("rg").notNull(),
-  ctps: text("ctps").notNull(),
-  data_admissao: timestamp("data_admissao").notNull(),
-  data_demissao: timestamp("data_demissao").notNull(),
-  situacao: text("situacao").notNull(),
-  obs1: text("obs1").notNull(),
-  data_nascimento: timestamp("data_nascimento").notNull(),
-  setor: text("setor").notNull(),
-  cargahoraria: text("cargahoraria").notNull(),
-  prontuario: text("prontuario").notNull(),
-  observacao: text("observacao").notNull(),
-  pcd: text("pcd").notNull(),
-  data_cadastro: timestamp("data_cadastro").notNull(),
-  cod_anterior: text("cod_anterior").notNull(),
+  endereco: text("endereco"),
+  numero: text("numero"),
+  complemento: text("complemento"),
+  bairro: text("bairro"),
+  cidade: text("cidade"),
+  uf: text("uf"),
+  cep: text("cep"),
+  telefone: text("telefone"),
+  celular: text("celular"),
+  cpf: text("cpf"),
+  rg: text("rg"),
+  ctps: text("ctps"),
+  data_admissao: timestamp("data_admissao"),
+  data_demissao: timestamp("data_demissao"),
+  situacao: text("situacao"),
+  obs1: text("obs1"),
+  data_nascimento: timestamp("data_nascimento"),
+  setor: text("setor"),
+  cargahoraria: text("cargahoraria"),
+  prontuario: text("prontuario"),
+  observacao: text("observacao"),
+  pcd: text("pcd"),
+  cod_anterior: text("cod_anterior"),
   phoneNumber: text("phone_number").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   sex: patientSexEnum("sex").notNull(),
@@ -193,12 +228,16 @@ export const patientsTableRelations = relations(
 export const appointmentsTable = pgTable("appointments", {
   id: uuid("id").defaultRandom().primaryKey(),
   date: timestamp("date").notNull(),
+  appointmentPriceInCents: integer("appointment_price_in_cents").notNull(),
   clinicId: uuid("clinic_id")
     .notNull()
     .references(() => clinicsTable.id, { onDelete: "cascade" }),
   patientId: uuid("patient_id")
     .notNull()
     .references(() => patientsTable.id, { onDelete: "cascade" }),
+  examesId: uuid("exames_id")
+    .notNull()
+    .references(() => examesTable.id, { onDelete: "cascade" }),
   doctorId: uuid("doctor_id")
     .notNull()
     .references(() => doctorsTable.id, { onDelete: "cascade" }),
@@ -218,6 +257,10 @@ export const appointmentsTableRelations = relations(
     patient: one(patientsTable, {
       fields: [appointmentsTable.patientId],
       references: [patientsTable.id],
+    }),
+    exames: one(examesTable, {
+      fields: [appointmentsTable.examesId],
+      references: [examesTable.id],
     }),
     doctor: one(doctorsTable, {
       fields: [appointmentsTable.doctorId],
