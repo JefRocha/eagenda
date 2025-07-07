@@ -1,17 +1,16 @@
-
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 
-import { searchExams } from "@/actions/upsert-exam";
+import { searchClients } from "@/actions/upsert-client";
 import { DataTable } from "@/components/ui/data-table";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { SearchInput } from "./search-input";
-import { examsTableColumns } from "./table-columns";
+import { clientsTableColumns } from "./table-columns";
 
-export const ExamsList = () => {
+export const ClientsList = () => {
   const searchParams = useSearchParams();
 
   const search = searchParams.get("search");
@@ -20,9 +19,9 @@ export const ExamsList = () => {
   const orderBy = searchParams.get("orderBy");
 
   const { data, isLoading } = useQuery({
-    queryKey: ["exams", search, page, order, orderBy],
+    queryKey: ["clients", search, page, order, orderBy],
     queryFn: () =>
-      searchExams({
+      searchClients({
         search: search || undefined,
         page,
         order: order || undefined,
@@ -38,7 +37,7 @@ export const ExamsList = () => {
     <>
       <SearchInput />
       <DataTable
-        columns={examsTableColumns}
+        columns={clientsTableColumns}
         data={data?.data || []}
         pagination={data?.pagination}
       />

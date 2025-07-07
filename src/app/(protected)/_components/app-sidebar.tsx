@@ -56,7 +56,10 @@ export function AppSidebar() {
   const session = authClient.useSession();
   const pathname = usePathname();
   const [isCadastrosOpen, setIsCadastrosOpen] = useState(
-    pathname === "/doctors" || pathname === "/patients" || pathname === "/exams",
+    pathname === "/doctors" ||
+      pathname === "/patients" ||
+      pathname === "/exams" ||
+      pathname === "/clients",
   );
 
   const handleSignOut = async () => {
@@ -128,6 +131,17 @@ export function AppSidebar() {
                         <Link href="/exams">
                           <Stethoscope /> {/* Usando Stethoscope temporariamente, pode ser alterado para um ícone mais adequado para exames */}
                           <span>Exames</span>
+                        </Link>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton
+                        asChild
+                        isActive={pathname === "/clients"}
+                      >
+                        <Link href="/clients">
+                          <UsersRound />
+                          <span>Clientes</span>
                         </Link>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
