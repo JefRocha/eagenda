@@ -5,12 +5,13 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Loader2 } from "lucide-react";
 import { CalendarIcon } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef, forwardRef } from "react";
 import { useForm } from "react-hook-form";
 import { NumericFormat } from "react-number-format";
 import { toast } from "sonner";
 import { useDebounce } from "use-debounce";
 
+import { getCnpjInfo } from "@/actions/get-cnpj-info";
 import { upsertClient } from "@/actions/upsert-client";
 import { upsertClientSchema } from "@/actions/upsert-client/schema";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Client } from "@/db/schema";
 import { useAction } from "@/hooks/use-action";
+
+const CustomNumericInput = forwardRef<HTMLInputElement, any>(({ className, ...props }, ref) => (
+  <Input className={className} {...props} ref={ref} />
+));
 
 interface UpsertClientFormProps {
   initialData?: Client;
@@ -115,9 +120,48 @@ const UpsertClientForm = ({
     },
   });
 
+  const { execute: executeCnpjSearch, isLoading: isLoadingCnpjSearch } = useAction(getCnpjInfo, {
+    onSuccess: (response) => {
+      if (response.data.success) {
+        form.setValue("razaoSocial", response.data.data.nome);
+        form.setValue("fantasia", response.data.data.fantasia || response.data.data.nome);
+        form.setValue("endereco", response.data.data.logradouro);
+        form.setValue("numero", response.data.data.numero);
+        form.setValue("complemento", response.data.data.complemento);
+        form.setValue("bairro", response.data.data.bairro);
+        form.setValue("cidade", response.data.data.municipio);
+        form.setValue("uf", response.data.data.uf);
+        form.setValue("cep", response.data.data.cep);
+        form.setValue("ie", response.data.data.ie);
+        form.setValue("cnae", response.data.data.cnae_fiscal);
+        form.setValue("telefone1", response.data.data.telefone);
+        form.setValue("email", response.data.data.email);
+        toast.success("Dados do CNPJ preenchidos com sucesso!");
+        setTimeout(() => {
+          form.setFocus("cpf");
+        }, 0);
+      } else {
+        toast.error(response.data.error || "Erro ao buscar CNPJ.");
+      }
+    },
+    onError: (error) => {
+      toast.error(error.serverError || "Ocorreu um erro inesperado ao buscar CNPJ.");
+    },
+  });
+
   const onSubmit = (values: upsertClientSchema) => {
     execute(values);
   };
+
+  const cpfValue = form.watch("cpf");
+  const pessoaValue = form.watch("pessoa");
+  const [debouncedCpfCnpj] = useDebounce(cpfValue, 500);
+
+  useEffect(() => {
+    if (pessoaValue === "J" && debouncedCpfCnpj && debouncedCpfCnpj.replace(/\D/g, "").length === 14) {
+      executeCnpjSearch({ cnpj: debouncedCpfCnpj });
+    }
+  }, [debouncedCpfCnpj, pessoaValue, executeCnpjSearch]);
 
   const cepValue = form.watch("cep");
   const [debouncedCep] = useDebounce(cepValue, 500);
@@ -176,32 +220,7 @@ const UpsertClientForm = ({
                 <TabsTrigger value="contato">Contato</TabsTrigger>
               </TabsList>
               <TabsContent value="geral" className="space-y-4 py-4">
-                <FormField
-                  control={form.control}
-                  name="razaoSocial"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Razão Social</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Razão Social" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="fantasia"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome Fantasia</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nome Fantasia" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-3">
                   <FormField
                     control={form.control}
@@ -232,19 +251,17 @@ const UpsertClientForm = ({
                     name="cpf"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>CPF</FormLabel>
+                        <FormLabel>{form.watch("pessoa") === "J" ? "CNPJ" : "CPF"}</FormLabel>
                         <FormControl>
                           <NumericFormat
-                            format="###.###.###-##"
+                            format={form.watch("pessoa") === "J" ? "##.###.###/####-##" : "###.###.###-##"}
                             mask="_"
                             value={field.value}
                             onValueChange={(values) => {
                               field.onChange(values.formattedValue);
                             }}
-                            customInput={(props) => (
-                              <Input {...props} className="w-full" />
-                            )}
-                            placeholder="000.000.000-00"
+                            customInput={CustomNumericInput}
+                            placeholder={form.watch("pessoa") === "J" ? "00.000.000/0000-00" : "000.000.000-00"}
                           />
                         </FormControl>
                         <FormMessage />
@@ -269,6 +286,33 @@ const UpsertClientForm = ({
                     )}
                   />
                 </div>
+                
+                <FormField
+                  control={form.control}
+                  name="razaoSocial"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Razão Social</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Razão Social" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="fantasia"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome Fantasia</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nome Fantasia" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-3">
                   <FormField
                     control={form.control}

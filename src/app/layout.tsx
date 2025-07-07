@@ -22,6 +22,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  console.log("Debug: Este log deve aparecer no terminal do servidor!"); // Adicione esta linha
   return (
     <html lang="pt">
       <body className={`${manrope.variable} antialiased`}>

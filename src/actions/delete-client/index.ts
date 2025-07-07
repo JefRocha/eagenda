@@ -5,11 +5,11 @@ import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
 import { clientsTable } from "@/db/schema";
-import { actionClient } from "@/lib/next-safe-action";
+import { action } from "@/lib/next-safe-action";
 
 import { deleteClientSchema } from "./schema";
 
-export const deleteClient = actionClient
+export const deleteClient = action
   .schema(deleteClientSchema)
   .action(async ({ parsedInput: { id } }) => {
     try {

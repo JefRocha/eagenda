@@ -8,11 +8,11 @@ import { cache } from "react";
 import { db } from "@/db";
 import { clientsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { actionClient } from "@/lib/next-safe-action";
+import { action } from "@/lib/next-safe-action";
 
 import { upsertClientSchema } from "./schema";
 
-export const upsertClient = actionClient
+export const upsertClient = action
   .schema(upsertClientSchema)
   .action(async ({ parsedInput }) => {
     const session = await auth.api.getSession({

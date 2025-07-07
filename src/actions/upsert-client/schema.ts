@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const upsertClientSchema = z.object({
   id: z.string().optional(),
-  razaoSocial: z.string().min(1, "Razão Social é obrigatória"),
+  cpf: z.string().optional().nullable(),
   fantasia: z.string().min(1, "Nome Fantasia é obrigatório"),
   endereco: z.string().optional().nullable(),
   numero: z.string().optional().nullable(),
