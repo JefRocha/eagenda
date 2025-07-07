@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { upsertPatient } from "@/actions/upsert-patient";
+import { upsertPatientSchema } from "@/actions/upsert-patient/schema";
 import { Button } from "@/components/ui/button";
 import {
   DialogContent,
@@ -35,20 +36,7 @@ import {
 } from "@/components/ui/select";
 import { patientsTable } from "@/db/schema";
 
-const formSchema = z.object({
-  name: z.string().trim().min(1, {
-    message: "Nome é obrigatório.",
-  }),
-  email: z.string().email({
-    message: "Email inválido.",
-  }),
-  phoneNumber: z.string().trim().min(1, {
-    message: "Número de telefone é obrigatório.",
-  }),
-  sex: z.enum(["male", "female"], {
-    required_error: "Sexo é obrigatório.",
-  }),
-});
+const formSchema = upsertPatientSchema;
 
 interface UpsertPatientFormProps {
   isOpen: boolean;
@@ -68,13 +56,32 @@ const UpsertPatientForm = ({
       name: patient?.name ?? "",
       email: patient?.email ?? "",
       phoneNumber: patient?.phoneNumber ?? "",
+      cpf: patient?.cpf ?? "",
+      dataNascimento: patient?.data_nascimento
+        ? typeof patient.data_nascimento === "string"
+          ? patient.data_nascimento
+          : patient.data_nascimento.toISOString().slice(0, 10)
+        : "",
+      observacao: patient?.observacao ?? "",
       sex: patient?.sex ?? undefined,
     },
   });
 
   useEffect(() => {
     if (isOpen) {
-      form.reset(patient);
+      form.reset({
+        name: patient?.name ?? "",
+        email: patient?.email ?? "",
+        phoneNumber: patient?.phoneNumber ?? "",
+        cpf: patient?.cpf ?? "",
+        dataNascimento: patient?.data_nascimento
+          ? typeof patient.data_nascimento === "string"
+            ? patient.data_nascimento
+            : patient.data_nascimento.toISOString().slice(0, 10)
+          : "",
+        observacao: patient?.observacao ?? "",
+        sex: patient?.sex ?? undefined,
+      });
     }
   }, [isOpen, form, patient]);
 
@@ -118,6 +125,45 @@ const UpsertPatientForm = ({
                 <FormControl>
                   <Input
                     placeholder="Digite o nome completo do paciente"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="cpf"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>CPF</FormLabel>
+                <FormControl>
+                  <PatternFormat
+                    format="###.###.###-##"
+                    mask="_"
+                    placeholder="000.000.000-00"
+                    value={field.value}
+                    onValueChange={(value) => {
+                      field.onChange(value.value);
+                    }}
+                    customInput={Input}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="dataNascimento"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Data de nascimento</FormLabel>
+                <FormControl>
+                  <Input
+                    type="date"
+                    placeholder="Selecione a data de nascimento"
                     {...field}
                   />
                 </FormControl>
@@ -184,6 +230,23 @@ const UpsertPatientForm = ({
                     <SelectItem value="female">Feminino</SelectItem>
                   </SelectContent>
                 </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="observacao"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Observação</FormLabel>
+                <FormControl>
+                  <textarea
+                    className="border-input bg-background placeholder:text-muted-foreground focus-visible:ring-ring min-h-[100px] w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                    placeholder="Observações do paciente (opcional)"
+                    {...field}
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}

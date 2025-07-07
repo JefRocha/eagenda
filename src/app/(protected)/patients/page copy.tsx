@@ -1,8 +1,7 @@
-// app/patients/page.tsx
+import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { searchPatients } from "@/actions/upsert-patient";
 import { DataTable } from "@/components/ui/data-table";
 import {
   PageActions,
@@ -13,38 +12,26 @@ import {
   PageHeaderContent,
   PageTitle,
 } from "@/components/ui/page-container";
+import { db } from "@/db";
+import { patientsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 import AddPatientButton from "./_components/add-patient-button";
-import { SearchInput } from "./_components/search-input";
 import { patientsTableColumns } from "./_components/table-columns";
 
-interface PatientsPageProps {
-  searchParams: {
-    search?: string;
-    page?: string;
-  };
-}
-
-const PatientsPage = async ({ searchParams }: PatientsPageProps) => {
+const PatientsPage = async () => {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-
   if (!session?.user) {
     redirect("/authentication");
   }
-
   if (!session.user.clinic) {
     redirect("/clinic-form");
   }
-
-  const { data, pagination } = await searchPatients({
-    search: searchParams.search,
-    page: Number(searchParams.page) || 1,
-    limit: 10, // Defina o limite de itens por página
+  const patients = await db.query.patientsTable.findMany({
+    where: eq(patientsTable.clinicId, session.user.clinic.id),
   });
-
   return (
     <PageContainer>
       <PageHeader>
@@ -59,12 +46,7 @@ const PatientsPage = async ({ searchParams }: PatientsPageProps) => {
         </PageActions>
       </PageHeader>
       <PageContent>
-        <SearchInput />
-        <DataTable
-          data={data}
-          columns={patientsTableColumns}
-          pagination={pagination}
-        />
+        <DataTable data={patients} columns={patientsTableColumns} />
       </PageContent>
     </PageContainer>
   );
