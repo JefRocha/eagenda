@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm";
 import {
   boolean,
   integer,
+  numeric,
   pgEnum,
   pgTable,
   text,
@@ -104,12 +105,7 @@ export const usersToClinicsTableRelations = relations(
   }),
 );
 
-export const clinicsTableRelations = relations(clinicsTable, ({ many }) => ({
-  doctors: many(doctorsTable),
-  patients: many(patientsTable),
-  appointments: many(appointmentsTable),
-  usersToClinics: many(usersToClinicsTable),
-}));
+
 
 export const doctorsTable = pgTable("doctors", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -156,7 +152,7 @@ export const examesTable = pgTable("exames", {
   descricao: text("descricao").notNull(),
   validade: integer("validade").notNull(),
   validade1: integer("validade1").notNull(),
-  valor: integer("valor").notNull(),
+  valor: numeric("valor", { precision: 15, scale: 2 }).notNull(),
   pedido: pedidoEnum("pedido").notNull(),
   codigo_anterior: text("codigo_anterior"),
   tipo: exametipoEnum("tipo").notNull(),
@@ -224,6 +220,14 @@ export const patientsTableRelations = relations(
     appointments: many(appointmentsTable),
   }),
 );
+
+export const clinicsTableRelations = relations(clinicsTable, ({ many }) => ({
+  doctors: many(doctorsTable),
+  patients: many(patientsTable),
+  appointments: many(appointmentsTable),
+  usersToClinics: many(usersToClinicsTable),
+  exames: many(examesTable),
+}));
 
 export const appointmentsTable = pgTable("appointments", {
   id: uuid("id").defaultRandom().primaryKey(),

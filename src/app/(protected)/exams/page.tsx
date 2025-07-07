@@ -1,8 +1,7 @@
-// app/patients/page.tsx
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { searchPatients } from "@/actions/upsert-patient";
+import { searchExams } from "@/actions/upsert-exam";
 import { DataTable } from "@/components/ui/data-table";
 import {
   PageActions,
@@ -15,18 +14,22 @@ import {
 } from "@/components/ui/page-container";
 import { auth } from "@/lib/auth";
 
-import AddPatientButton from "./_components/add-patient-button";
+import AddExamButton from "./_components/add-exam-button";
 import { SearchInput } from "./_components/search-input";
-import { patientsTableColumns } from "./_components/table-columns";
+import { examsTableColumns } from "./_components/table-columns";
 
-interface PatientsPageProps {
+interface ExamsPageProps {
   searchParams: {
     search?: string;
     page?: string;
   };
 }
 
-const PatientsPage = async ({ searchParams }: PatientsPageProps) => {
+const ExamsPage = async ({ searchParams }: ExamsPageProps) => {
+  const params = new URLSearchParams(searchParams.toString());
+  const search = params.get("search");
+  const page = params.get("page");
+
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -39,30 +42,30 @@ const PatientsPage = async ({ searchParams }: PatientsPageProps) => {
     redirect("/clinic-form");
   }
 
-  const { data, pagination } = await searchPatients({
-    search: searchParams.search,
-    page: Number(searchParams.page) || 1,
-    limit: 10, // Defina o limite de itens por página
+  const { data, pagination } = await searchExams({
+    search: search || undefined,
+    page: Number(page) || 1,
+    limit: 10,
   });
 
   return (
     <PageContainer>
       <PageHeader>
         <PageHeaderContent>
-          <PageTitle>Pacientes</PageTitle>
+          <PageTitle>Exames</PageTitle>
           <PageDescription>
-            Cadastro de Colaboradores
+            Gerencie os exames da sua clínica
           </PageDescription>
         </PageHeaderContent>
         <PageActions>
-          <AddPatientButton />
+          <AddExamButton />
         </PageActions>
       </PageHeader>
       <PageContent>
         <SearchInput />
         <DataTable
           data={data}
-          columns={patientsTableColumns}
+          columns={examsTableColumns}
           pagination={pagination}
         />
       </PageContent>
@@ -70,4 +73,4 @@ const PatientsPage = async ({ searchParams }: PatientsPageProps) => {
   );
 };
 
-export default PatientsPage;
+export default ExamsPage;

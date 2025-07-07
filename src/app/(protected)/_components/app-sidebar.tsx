@@ -2,6 +2,7 @@
 
 import {
   CalendarDays,
+  FolderOpen,
   Gem,
   LayoutDashboard,
   LogOut,
@@ -11,6 +12,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -30,6 +32,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { authClient } from "@/lib/auth-client";
 
@@ -44,22 +49,15 @@ const items = [
     url: "/appointments",
     icon: CalendarDays,
   },
-  {
-    title: "Médicos",
-    url: "/doctors",
-    icon: Stethoscope,
-  },
-  {
-    title: "Pacientes",
-    url: "/patients",
-    icon: UsersRound,
-  },
 ];
 
 export function AppSidebar() {
   const router = useRouter();
   const session = authClient.useSession();
   const pathname = usePathname();
+  const [isCadastrosOpen, setIsCadastrosOpen] = useState(
+    pathname === "/doctors" || pathname === "/patients" || pathname === "/exams",
+  );
 
   const handleSignOut = async () => {
     await authClient.signOut({
@@ -90,6 +88,52 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => setIsCadastrosOpen(!isCadastrosOpen)}
+                  isActive={isCadastrosOpen}
+                >
+                  <FolderOpen />
+                  <span>Cadastros</span>
+                </SidebarMenuButton>
+                {isCadastrosOpen && (
+                  <SidebarMenuSub>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton
+                        asChild
+                        isActive={pathname === "/doctors"}
+                      >
+                        <Link href="/doctors">
+                          <Stethoscope />
+                          <span>Médicos</span>
+                        </Link>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton
+                        asChild
+                        isActive={pathname === "/patients"}
+                      >
+                        <Link href="/patients">
+                          <UsersRound />
+                          <span>Pacientes</span>
+                        </Link>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton
+                        asChild
+                        isActive={pathname === "/exams"}
+                      >
+                        <Link href="/exams">
+                          <Stethoscope /> {/* Usando Stethoscope temporariamente, pode ser alterado para um ícone mais adequado para exames */}
+                          <span>Exames</span>
+                        </Link>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  </SidebarMenuSub>
+                )}
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

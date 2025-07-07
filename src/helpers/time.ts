@@ -1,3 +1,5 @@
+import dayjs from "dayjs";
+
 export const generateTimeSlots = () => {
   const slots = [];
   for (let hour = 5; hour <= 23; hour++) {
@@ -7,4 +9,8 @@ export const generateTimeSlots = () => {
     }
   }
   return slots;
+};
+
+export const formatDate = (date: Date | string) => {
+  return dayjs(date).format("DD/MM/YYYY");
 };
