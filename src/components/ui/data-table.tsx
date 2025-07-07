@@ -4,9 +4,11 @@ import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
+  SortingState,
   useReactTable,
 } from '@tanstack/react-table';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -34,15 +36,33 @@ export function DataTable<TData, TValue>({
   data,
   pagination,
 }: DataTableProps<TData, TValue>) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const [sorting, setSorting] = useState<SortingState>([]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (sorting.length > 0) {
+      params.set('orderBy', sorting[0].id);
+      params.set('order', sorting[0].desc ? 'desc' : 'asc');
+    } else {
+      params.delete('orderBy');
+      params.delete('order');
+    }
+    router.push(`${pathname}?${params.toString()}`);
+  }, [sorting]);
+
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    onSortingChange: setSorting,
+    state: {
+      sorting,
+    },
   });
-
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams(searchParams.toString());

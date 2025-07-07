@@ -22,6 +22,8 @@ interface ExamsPageProps {
   searchParams: {
     search?: string;
     page?: string;
+    orderBy?: string;
+    order?: string;
   };
 }
 
@@ -43,9 +45,11 @@ const ExamsPage = async ({ searchParams }: ExamsPageProps) => {
   }
 
   const { data, pagination } = await searchExams({
-    search: search || undefined,
-    page: Number(page) || 1,
+    search: searchParams.search || undefined,
+    page: Number(searchParams.page) || 1,
     limit: 10,
+    orderBy: searchParams.orderBy,
+    order: searchParams.order,
   });
 
   return (

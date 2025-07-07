@@ -1,6 +1,6 @@
 "use server";
 
-import { and, count, desc, eq, ilike } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { cache } from "react";
@@ -94,6 +94,8 @@ export const searchExams = cache(
       search?: string;
       page?: number;
       limit?: number;
+      orderBy?: string;
+      order?: string;
     } = {},
   ) => {
     const session = await auth.api.getSession({
@@ -108,7 +110,7 @@ export const searchExams = cache(
       throw new Error("Clinic not found");
     }
 
-    const { search = "", page = 1, limit = 50 } = params;
+    const { search = "", page = 1, limit = 50, orderBy, order } = params;
 
     const conditions = [eq(examesTable.clinicId, session.user.clinic.id)];
 
@@ -120,7 +122,11 @@ export const searchExams = cache(
       where: and(...conditions),
       limit,
       offset: (page - 1) * limit,
-      orderBy: desc(examesTable.createdAt),
+      orderBy: orderBy
+        ? order === "asc"
+          ? asc(examesTable[orderBy])
+          : desc(examesTable[orderBy])
+        : desc(examesTable.createdAt),
     });
 
     const [{ count: totalCount }] = await db

@@ -75,11 +75,7 @@ const UpsertExamForm = ({ initialData, isOpen, onSuccess }: UpsertExamFormProps)
   });
 
   const onSubmit = (values: upsertExamSchema) => {
-    const parsedValues = {
-      ...values,
-      valor: Number(values.valor), // Força a conversão para número
-    };
-    execute(parsedValues);
+    execute(values);
   };
 
   return (
@@ -233,17 +229,15 @@ const UpsertExamForm = ({ initialData, isOpen, onSuccess }: UpsertExamFormProps)
             />
           </div>
           <DialogFooter>
-            <DialogClose asChild>
-              <Button type="submit">
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : initialData ? (
-                  "Salvar Alterações"
-                ) : (
-                  "Criar Exame"
-                )}
-              </Button>
-            </DialogClose>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : initialData ? (
+                "Salvar Alterações"
+              ) : (
+                "Criar Exame"
+              )}
+            </Button>
           </DialogFooter>
         </form>
       </Form>

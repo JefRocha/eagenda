@@ -4,7 +4,7 @@ import { Edit, MoreHorizontal, Trash } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { deleteExam } from "@/actions/upsert-exam";
+import { deleteExam } from "@/actions/delete-exam";
 import {
   AlertDialog,
   AlertDialogAction,
