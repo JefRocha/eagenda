@@ -110,7 +110,7 @@ export const searchExams = cache(
       throw new Error("Clinic not found");
     }
 
-    const { search = "", page = 1, limit = 50, orderBy, order } = params;
+    const { search = "", page = 1, limit = 10, orderBy, order } = params;
 
     const conditions = [eq(examesTable.clinicId, session.user.clinic.id)];
 
