@@ -5,6 +5,7 @@ import {
   numeric,
   pgEnum,
   pgTable,
+  serial,
   text,
   time,
   timestamp,
@@ -222,7 +223,7 @@ export const patientsTableRelations = relations(
 );
 
 export const clientsTable = pgTable("clients", {
-  id: uuid("id").defaultRandom().primaryKey(),
+  id: serial("id").primaryKey(),
   clinicId: uuid("clinic_id")
     .notNull()
     .references(() => clinicsTable.id, { onDelete: "cascade" }),
@@ -287,7 +288,6 @@ export const clientsTable = pgTable("clients", {
   especial: boolean("especial").default(false),
   bloqueado: boolean("bloqueado").default(false),
   pessoa: text("pessoa").default("J"),
-  teste: text("teste"),
   documentosPdf: text("documentos_pdf"),
   codigoAnterior: text("codigo_anterior"),
   createdAt: timestamp("created_at").defaultNow().notNull(),

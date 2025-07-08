@@ -1,10 +1,12 @@
 import { z } from "zod";
+
 import { isValidCnpj, isValidCpf } from "@/helpers/validation";
 
 export const upsertClientSchema = z.object({
-  id: z.string().optional(),
+  id: z.number().optional(),
+  razaoSocial: z.string().optional().nullable(),
   cpf: z.string().optional().nullable(),
-  fantasia: z.string().min(1, "Nome Fantasia é obrigatório"),
+  fantasia: z.string().optional().nullable(),
   endereco: z.string().optional().nullable(),
   numero: z.string().optional().nullable(),
   bairro: z.string().optional().nullable(),
@@ -54,7 +56,7 @@ export const upsertClientSchema = z.object({
   contribuinte: z.string().optional().nullable(),
   vlrMens: z.coerce.number().optional().nullable(),
   observacao: z.string().optional().nullable(),
-  usaFor: z.string().optional().nullable(),
+  usaFor: z.coerce.number().optional().nullable(),
   crt: z.string().optional().nullable(),
   melhorDia: z.string().optional().nullable(),
   vendedor: z.string().optional().nullable(),

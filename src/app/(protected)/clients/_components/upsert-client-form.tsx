@@ -1,11 +1,12 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Loader2 } from "lucide-react";
 import { CalendarIcon } from "lucide-react";
-import { useEffect, useRef, forwardRef } from "react";
+import { forwardRef,useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { NumericFormat } from "react-number-format";
 import { toast } from "sonner";
@@ -46,9 +47,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Client } from "@/db/schema";
 import { useAction } from "@/hooks/use-action";
 
@@ -67,28 +68,74 @@ const UpsertClientForm = ({
   isOpen,
   onSuccess,
 }: UpsertClientFormProps) => {
+  const queryClient = useQueryClient();
   const form = useForm<upsertClientSchema>({
     resolver: zodResolver(upsertClientSchema),
     defaultValues: initialData
       ? {
           ...initialData,
+          razaoSocial: initialData.razaoSocial || "",
+          fantasia: initialData.fantasia || "",
+          cpf: initialData.cpf || "",
+          endereco: initialData.endereco || "",
+          numero: initialData.numero || "",
+          bairro: initialData.bairro || "",
+          cidade: initialData.cidade || "",
+          uf: initialData.uf || "",
+          cep: initialData.cep || "",
+          complemento: initialData.complemento || "",
+          telefone1: initialData.telefone1 || "",
+          telefone2: initialData.telefone2 || "",
+          telefone3: initialData.telefone3 || "",
+          celular: initialData.celular || "",
+          email: initialData.email || "",
+          rg: initialData.rg || "",
+          estadoCivil: initialData.estadoCivil || "",
+          empresa: initialData.empresa || "",
+          cnae: initialData.cnae || "",
+          codMunicipioIbge: initialData.codMunicipioIbge || "",
+          ibge: initialData.ibge || "",
+          correspEndereco: initialData.correspEndereco || "",
+          correspBairro: initialData.correspBairro || "",
+          correspCidade: initialData.correspCidade || "",
+          correspUf: initialData.correspUf || "",
+          correspCep: initialData.correspCep || "",
+          correspComplemento: initialData.correspComplemento || "",
+          correspNumero: initialData.correspNumero || "",
+          foto: initialData.foto || "",
+          tipoCadastro: initialData.tipoCadastro || "",
+          ie: initialData.ie || "",
+          mdia: initialData.mdia || "",
+          tDocumento: initialData.tDocumento || "",
+          tVencimento: initialData.tVencimento || "",
+          tCobranca: initialData.tCobranca || "",
+          retencoes: initialData.retencoes || "",
+          simples: initialData.simples || "",
+          correios: initialData.correios || "",
+          email1: initialData.email1 || "",
+          email2: initialData.email2 || "",
+          email3: initialData.email3 || "",
+          email4: initialData.email4 || "",
+          email5: initialData.email5 || "",
+          contribuinte: initialData.contribuinte || "N",
+          observacao: initialData.observacao || "",
+          usaFor: initialData.usaFor || "",
+          crt: initialData.crt || "",
+          melhorDia: initialData.melhorDia || "",
+          vendedor: initialData.vendedor || "",
+          teste: initialData.teste || "",
+          documentosPdf: initialData.documentosPdf || "",
+          codigoAnterior: initialData.codigoAnterior || "",
           moradia: initialData.moradia || undefined,
           tipo: initialData.tipo || undefined,
           situacao: initialData.situacao || undefined,
-          retencoes: initialData.retencoes || undefined,
-          simples: initialData.simples || undefined,
-          correios: initialData.correios || undefined,
-          contribuinte: initialData.contribuinte || undefined,
           vlrMens: initialData.vlrMens || undefined,
-          usaFor: initialData.usaFor || undefined,
-          crt: initialData.crt || undefined,
           travado: initialData.travado || false,
           ativo: initialData.ativo || false,
           inadimplente: initialData.inadimplente || false,
           especial: initialData.especial || false,
           bloqueado: initialData.bloqueado || false,
           pessoa: initialData.pessoa || "J",
-          // Handle Date objects for timestamp fields
           dataCadastro: initialData.dataCadastro
             ? new Date(initialData.dataCadastro)
             : undefined,
@@ -102,22 +149,74 @@ const UpsertClientForm = ({
       : {
           razaoSocial: "",
           fantasia: "",
+          cpf: "",
+          endereco: "",
+          numero: "",
+          bairro: "",
+          cidade: "",
+          uf: "",
+          cep: "",
+          complemento: "",
+          telefone1: "",
+          telefone2: "",
+          telefone3: "",
+          celular: "",
+          email: "",
+          rg: "",
+          estadoCivil: "",
+          empresa: "",
+          cnae: "",
+          codMunicipioIbge: "",
+          ibge: "",
+          correspEndereco: "",
+          correspBairro: "",
+          correspCidade: "",
+          correspUf: "",
+          correspCep: "",
+          correspComplemento: "",
+          correspNumero: "",
+          foto: "",
+          tipoCadastro: "",
+          ie: "",
+          mdia: "",
+          tDocumento: "",
+          tVencimento: "",
+          tCobranca: "",
+          retencoes: "",
+          simples: "",
+          correios: "",
+          email1: "",
+          email2: "",
+          email3: "",
+          email4: "",
+          email5: "",
+          contribuinte: "N",
+          observacao: "",
+          usaFor: "",
+          crt: "",
+          melhorDia: "",
+          vendedor: "",
+          teste: "",
+          documentosPdf: "",
+          codigoAnterior: "",
           pessoa: "J",
           travado: false,
           ativo: false,
           inadimplente: false,
           especial: false,
           bloqueado: false,
-          correspNumero: initialData?.correspNumero || undefined,
         },
   });
 
   const { execute, isLoading } = useAction(upsertClient, {
     onSuccess: () => {
+      console.log("Ação upsertClient bem-sucedida.");
+      queryClient.invalidateQueries({ queryKey: ["clients"] });
       toast.success(initialData ? "Cliente atualizado" : "Cliente criado");
       onSuccess();
     },
     onError: (error) => {
+      console.error("Erro na ação upsertClient:", error);
       toast.error(error.serverError || "Ocorreu um erro inesperado.");
     },
   });
@@ -125,19 +224,19 @@ const UpsertClientForm = ({
   const { execute: executeCnpjSearch, isLoading: isLoadingCnpjSearch } = useAction(getCnpjInfo, {
     onSuccess: (response) => {
       if (response.data.success) {
-        form.setValue("razaoSocial", response.data.data.nome.toUpperCase());
-        form.setValue("fantasia", (response.data.data.fantasia || response.data.data.nome).toUpperCase());
-        form.setValue("endereco", response.data.data.logradouro.toUpperCase());
-        form.setValue("numero", response.data.data.numero.toUpperCase());
-        form.setValue("complemento", response.data.data.complemento.toUpperCase());
-        form.setValue("bairro", response.data.data.bairro.toUpperCase());
-        form.setValue("cidade", response.data.data.municipio.toUpperCase());
-        form.setValue("uf", response.data.data.uf.toUpperCase());
-        form.setValue("cep", response.data.data.cep);
-        form.setValue("ie", response.data.data.ie.toUpperCase());
-        form.setValue("cnae", response.data.data.cnae_fiscal.toUpperCase());
-        form.setValue("telefone1", response.data.data.telefone);
-        form.setValue("email", response.data.data.email);
+        form.setValue("razaoSocial", (response.data.data.nome || "").toUpperCase());
+        form.setValue("fantasia", (response.data.data.fantasia || response.data.data.nome || "").toUpperCase());
+        form.setValue("endereco", (response.data.data.logradouro || "").toUpperCase());
+        form.setValue("numero", (response.data.data.numero || "").toUpperCase());
+        form.setValue("complemento", (response.data.data.complemento || "").toUpperCase());
+        form.setValue("bairro", (response.data.data.bairro || "").toUpperCase());
+        form.setValue("cidade", (response.data.data.municipio || "").toUpperCase());
+        form.setValue("uf", (response.data.data.uf || "").toUpperCase());
+        form.setValue("cep", response.data.data.cep || "");
+        form.setValue("ie", (response.data.data.ie || "").toUpperCase());
+        form.setValue("cnae", (response.data.data.cnae_fiscal || "").toUpperCase());
+        form.setValue("telefone1", response.data.data.telefone || "");
+        form.setValue("email", response.data.data.email || "");
 
         // Aplicar a máscara manualmente ao CNPJ/CPF
         const rawCpfCnpj = response.data.data.cnpj || response.data.data.cpf;
@@ -166,6 +265,7 @@ const UpsertClientForm = ({
   });
 
   const onSubmit = (values: upsertClientSchema) => {
+    console.log("Dados do formulário enviados:", values);
     execute(values);
   };
 
@@ -253,12 +353,6 @@ const UpsertClientForm = ({
   }, [debouncedCorrespCep, form, correspEnderecoValue]);
 
   return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={(open) => {
-        if (!open) onSuccess();
-      }}
-    >
       <DialogContent className="max-h-[90vh] w-full max-w-5xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
@@ -931,95 +1025,94 @@ const UpsertClientForm = ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Email Principal</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Email Principal" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="email1"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email 1</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Email 1" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="email2"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email 2</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Email 2" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="email3"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email 3</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Email 3" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="email4"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email 4</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Email 4" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="email5"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email 5</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Email 5" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </TabsContent>
-            </Tabs>
-            <DialogFooter>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : initialData ? (
-                  "Salvar Alterações"
-                ) : (
-                  "Criar Cliente"
+                    <FormControl>
+                      <Input placeholder="Email Principal" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+              />
+              <FormField
+                control={form.control}
+                name="email1"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email 1</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Email 1" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email2"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email 2</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Email 2" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email3"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email 3</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Email 3" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email4"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email 4</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Email 4" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email5"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email 5</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Email 5" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </TabsContent>
+          </Tabs>
+          <DialogFooter>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : initialData ? (
+                "Salvar Alterações"
+              ) : (
+                "Criar Cliente"
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+      </Form>
+    </DialogContent>
   );
 };
 

@@ -20,8 +20,8 @@ const AddExamButton = () => {
           </span>
         </Button>
       </DialogTrigger>
-      <UpsertExamForm onSuccess={() => setIsOpen(false)} isOpen={isOpen} />
-    </Dialog>
+        <UpsertExamForm onSuccess={() => setIsOpen(false)} isOpen={isOpen} />
+      </Dialog>
   );
 };
 

@@ -12,7 +12,7 @@ const AddClientButton = () => {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger>
         <Button size="sm" className="h-8 gap-1">
           <PlusCircle className="h-3.5 w-3.5" />
           <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
@@ -20,8 +20,8 @@ const AddClientButton = () => {
           </span>
         </Button>
       </DialogTrigger>
-      <UpsertClientForm onSuccess={() => setIsOpen(false)} isOpen={isOpen} />
-    </Dialog>
+        <UpsertClientForm onSuccess={() => setIsOpen(false)} isOpen={isOpen} />
+      </Dialog>
   );
 };
 

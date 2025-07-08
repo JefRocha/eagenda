@@ -26,18 +26,18 @@ export const upsertClient = action
     }
 
     await db
-      .insert(clientsTable)
-      .values({
-        ...parsedInput,
-        id: parsedInput.id,
-        clinicId: session?.user.clinic?.id,
-      })
-      .onConflictDoUpdate({
-        target: [clientsTable.id],
-        set: {
-          ...parsedInput,
-        },
-      });
+          .insert(clientsTable)
+          .values({
+            ...parsedInput,
+            id: parsedInput.id,
+            clinicId: session?.user.clinic?.id,
+          })
+          .onConflictDoUpdate({
+            target: [clientsTable.id],
+            set: {
+              ...parsedInput,
+            },
+          });
     revalidatePath("/clients");
     console.log("upsertClient action completed successfully");
   });
