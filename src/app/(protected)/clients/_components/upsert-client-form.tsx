@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Loader2 } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 import { CalendarIcon } from "lucide-react";
 import { forwardRef,useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
@@ -50,6 +50,12 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Client } from "@/db/schema";
 import { useAction } from "@/hooks/use-action";
 
@@ -238,17 +244,10 @@ const UpsertClientForm = ({
         form.setValue("telefone1", response.data.data.telefone || "");
         form.setValue("email", response.data.data.email || "");
 
-        // Aplicar a máscara manualmente ao CNPJ/CPF
         const rawCpfCnpj = response.data.data.cnpj || response.data.data.cpf;
         if (rawCpfCnpj) {
           const cleanedValue = rawCpfCnpj.replace(/\D/g, '');
-          let formattedValue = cleanedValue;
-          if (pessoaValue === "J") {
-            formattedValue = cleanedValue.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
-          } else if (pessoaValue === "F") {
-            formattedValue = cleanedValue.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
-          }
-          form.setValue("cpf", formattedValue);
+          form.setValue("cpf", cleanedValue);
         }
 
         toast.success("Dados do CNPJ preenchidos com sucesso!");
@@ -271,18 +270,17 @@ const UpsertClientForm = ({
 
   const cpfValue = form.watch("cpf");
   const pessoaValue = form.watch("pessoa");
-  const [debouncedCpfCnpj] = useDebounce(cpfValue, 500);
 
-  useEffect(() => {
-    const cleanedCnpj = debouncedCpfCnpj ? debouncedCpfCnpj.replace(/\D/g, "") : "";
-    if (pessoaValue === "J" && cleanedCnpj.length > 0) {
-      form.trigger("cpf").then((isValid) => {
-        if (isValid && cleanedCnpj.length === 14) {
-          executeCnpjSearch({ cnpj: debouncedCpfCnpj });
-        }
-      });
+  const handleCnpjSearch = () => {
+    const cleanedCnpj = cpfValue ? cpfValue.replace(/\D/g, "") : "";
+    if (pessoaValue === "J" && cleanedCnpj.length === 14) {
+      executeCnpjSearch({ cnpj: cpfValue });
+    } else if (pessoaValue === "J" && cleanedCnpj.length !== 14) {
+      toast.error("Por favor, insira um CNPJ válido com 14 dígitos.");
+    } else if (pessoaValue === "F") {
+      toast.info("A busca de CNPJ é apenas para Pessoa Jurídica.");
     }
-  }, [debouncedCpfCnpj, pessoaValue, executeCnpjSearch, form]);
+  };
 
   const cepValue = form.watch("cep");
   const enderecoValue = form.watch("endereco"); // Adicionado: Observa o valor do campo endereco
@@ -353,6 +351,7 @@ const UpsertClientForm = ({
   }, [debouncedCorrespCep, form, correspEnderecoValue]);
 
   return (
+    <Dialog open={isOpen} onOpenChange={onSuccess}>
       <DialogContent className="max-h-[90vh] w-full max-w-5xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
@@ -406,19 +405,45 @@ const UpsertClientForm = ({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>{form.watch("pessoa") === "J" ? "CNPJ" : "CPF"}</FormLabel>
-                        <FormControl>
-                          <NumericFormat
-                            format={form.watch("pessoa") === "J" ? "##.###.###/####-##" : "###.###.###-##"}
-                            mask="_"
-                            value={field.value || ""}
-                            onValueChange={(values) => {
-                              field.onChange(values.value);
-                            }}
-                            customInput={CustomNumericInput}
-                            placeholder={form.watch("pessoa") === "J" ? "00.000.000/0000-00" : "000.000.000-00"}
-                            allowLeadingZeros={true}
-                          />
-                        </FormControl>
+                        <div className="flex items-center space-x-2">
+                          <FormControl>
+                            <NumericFormat
+                              key={cpfValue}
+                              format={form.watch("pessoa") === "J" ? "##.###.###/####-##" : "###.###.###-##"}
+                              mask="_"
+                              value={field.value || ""}
+                              onValueChange={(values) => {
+                                field.onChange(values.value);
+                              }}
+                              customInput={CustomNumericInput}
+                              placeholder={form.watch("pessoa") === "J" ? "00.000.000/0000-00" : "000.000.000-00"}
+                              allowLeadingZeros={true}
+                            />
+                          </FormControl>
+                          {form.watch("pessoa") === "J" && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    type="button"
+                                    size="icon"
+                                    onClick={handleCnpjSearch}
+                                    disabled={isLoadingCnpjSearch || !form.getValues("cpf") || form.getValues("cpf").replace(/\D/g, "").length !== 14}
+                                  >
+                                    {isLoadingCnpjSearch ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <Search className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Buscar CNPJ</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -1113,7 +1138,8 @@ const UpsertClientForm = ({
         </form>
       </Form>
     </DialogContent>
-  );
+    </Dialog>
+  )
 };
 
 export default UpsertClientForm;
