@@ -11,14 +11,14 @@ import { ClientsTableActions } from "./table-actions";
 
 export const clientsTableColumns: ColumnDef<Client>[] = [
   {
-    accessorKey: "fantasia",
+    accessorKey: "id",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Fantasia
+          Código
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
@@ -39,14 +39,14 @@ export const clientsTableColumns: ColumnDef<Client>[] = [
     },
   },
   {
-    accessorKey: "email",
+    accessorKey: "cpf",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Email
+          CNPJ/CPF
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
@@ -60,54 +60,39 @@ export const clientsTableColumns: ColumnDef<Client>[] = [
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Telefone 1
+          Telefone
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
   },
   {
-    accessorKey: "celular",
+    accessorKey: "cidade",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Celular
+          Cidade
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
   },
   {
-    accessorKey: "cpf",
+    accessorKey: "email",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          CPF
+          Email
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
-  },
-  {
-    accessorKey: "createdAt",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Criado Em
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => formatDate(row.original.createdAt),
   },
   {
     id: "actions",

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isValidCnpj, isValidCpf } from "@/helpers/validation";
 
 export const upsertClientSchema = z.object({
   id: z.string().optional(),
@@ -20,7 +21,6 @@ export const upsertClientSchema = z.object({
   celular: z.string().optional().nullable(),
   email: z.string().email("E-mail inválido").optional().nullable(),
   rg: z.string().optional().nullable(),
-  cpf: z.string().optional().nullable(),
   estadoCivil: z.string().optional().nullable(),
   empresa: z.string().optional().nullable(),
   dataCadastro: z.coerce.date().optional().nullable(),
@@ -35,6 +35,7 @@ export const upsertClientSchema = z.object({
   correspUf: z.string().optional().nullable(),
   correspCep: z.string().optional().nullable(),
   correspComplemento: z.string().optional().nullable(),
+  correspNumero: z.string().optional().nullable(),
   foto: z.string().optional().nullable(),
   tipoCadastro: z.string().optional().nullable(),
   ie: z.string().optional().nullable(),
@@ -66,6 +67,26 @@ export const upsertClientSchema = z.object({
   teste: z.string().optional().nullable(),
   documentosPdf: z.string().optional().nullable(),
   codigoAnterior: z.string().optional().nullable(),
+}).superRefine((data, ctx) => {
+  if (data.pessoa === "J") {
+    const cleanedCnpj = data.cpf?.replace(/\D/g, '');
+    if (!cleanedCnpj || !isValidCnpj(cleanedCnpj)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "CNPJ inválido",
+        path: ["cpf"],
+      });
+    }
+  } else if (data.pessoa === "F") {
+    const cleanedCpf = data.cpf?.replace(/\D/g, '');
+    if (!cleanedCpf || !isValidCpf(cleanedCpf)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "CPF inválido",
+        path: ["cpf"],
+      });
+    }
+  }
 });
 
 export type upsertClientSchema = z.infer<typeof upsertClientSchema>;
