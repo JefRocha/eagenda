@@ -489,7 +489,7 @@ const UpsertClientForm = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onSuccess}>
-      <DialogContent className="max-h-[90vh] w-full max-w-5xl overflow-y-auto">
+      <DialogContent hideCloseButton className="max-h-[90vh] w-full max-w-5xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {initialData ? "Editar Cliente" : "Novo Cliente"}
@@ -638,7 +638,7 @@ const UpsertClientForm = ({
                     </FormItem>
                   )}
                 />
-                <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <FormField
                     control={form.control}
                     name="cnae"
@@ -674,11 +674,11 @@ const UpsertClientForm = ({
                     name="crt"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>CRT</FormLabel>
+                        <FormLabel>Regime Tributário</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione o CRT" />
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Selecione o Regime" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -701,9 +701,7 @@ const UpsertClientForm = ({
                       <FormItem>
                         <FormLabel>Tipo Documento</FormLabel>
                         <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
+                          onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger className="w-full">
                               <SelectValue placeholder="Selecione o tipo" />
@@ -1092,175 +1090,187 @@ const UpsertClientForm = ({
                 </div>
               </TabsContent>
               <TabsContent value="contato" className="space-y-4 py-4">
-                <FormField
-                  control={form.control}
-                  name="telefone1"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Telefone 1</FormLabel>
-                      <FormControl>
-                        <NumericFormat
-                          format="(##) ####-####"
-                          mask="_"
-                          value={field.value}
-                          onValueChange={(values) => {
-                            field.onChange(values.formattedValue);
-                          }}
-                          customInput={Input}
-                          placeholder="(00) 0000-0000"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="telefone2"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Telefone 2</FormLabel>
-                      <FormControl>
-                        <NumericFormat
-                          format="(##) ####-####"
-                          mask="_"
-                          value={field.value}
-                          onValueChange={(values) => {
-                            field.onChange(values.formattedValue);
-                          }}
-                          customInput={Input}
-                          placeholder="(00) 0000-0000"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="telefone3"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Telefone 3</FormLabel>
-                      <FormControl>
-                        <NumericFormat
-                          format="(##) ####-####"
-                          mask="_"
-                          value={field.value}
-                          onValueChange={(values) => {
-                            field.onChange(values.formattedValue);
-                          }}
-                          customInput={Input}
-                          placeholder="(00) 0000-0000"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="celular"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Celular</FormLabel>
-                      <FormControl>
-                        <NumericFormat
-                          format="(##) #####-####"
-                          mask="_"
-                          value={field.value}
-                          onValueChange={(values) => {
-                            field.onChange(values.formattedValue);
-                          }}
-                          customInput={Input}
-                          placeholder="(00) 00000-0000"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email Principal</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Email Principal" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email1"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email 1</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Email 1" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email2"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email 2</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Email 2" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email3"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email 3</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Email 3" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email4"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email 4</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Email 4" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email5"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email 5</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Email 5" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+                  <FormField
+                    control={form.control}
+                    name="telefone1"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Telefone 1</FormLabel>
+                        <FormControl>
+                          <NumericFormat
+                            format="(##) ####-####"
+                            mask="_"
+                            value={field.value}
+                            onValueChange={(values) => {
+                              field.onChange(values.formattedValue);
+                            }}
+                            customInput={Input}
+                            placeholder="(00) 0000-0000"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="telefone2"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Telefone 2</FormLabel>
+                        <FormControl>
+                          <NumericFormat
+                            format="(##) ####-####"
+                            mask="_"
+                            value={field.value}
+                            onValueChange={(values) => {
+                              field.onChange(values.formattedValue);
+                            }}
+                            customInput={Input}
+                            placeholder="(00) 0000-0000"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="telefone3"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Telefone 3</FormLabel>
+                        <FormControl>
+                          <NumericFormat
+                            format="(##) ####-####"
+                            mask="_"
+                            value={field.value}
+                            onValueChange={(values) => {
+                              field.onChange(values.formattedValue);
+                            }}
+                            customInput={Input}
+                            placeholder="(00) 0000-0000"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="celular"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Celular</FormLabel>
+                        <FormControl>
+                          <NumericFormat
+                            format="(##) #####-####"
+                            mask="_"
+                            value={field.value}
+                            onValueChange={(values) => {
+                              field.onChange(values.formattedValue);
+                            }}
+                            customInput={Input}
+                            placeholder="(00) 00000-0000"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email Principal</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Email Principal" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="email1"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email 1</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Email 1" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="email2"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email 2</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Email 2" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="email3"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email 3</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Email 3" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="email4"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email 4</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Email 4" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="email5"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email 5</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Email 5" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
             </TabsContent>
           </Tabs>
           <DialogFooter>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={onSuccess}
+              className="w-35"
+            >
+              Cancelar
+            </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
