@@ -75,7 +75,7 @@ export const clientsTableColumns: ColumnDef<Client>[] = [
     cell: ({ row }) => formatCnpjCpf(row.original.cpf),
   },
   {
-    accessorKey: "telefone1",
+    accessorKey: "celular",
     header: ({ column }) => {
       return (
         <Button

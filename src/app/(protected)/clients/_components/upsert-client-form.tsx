@@ -80,6 +80,74 @@ const CustomNumericInput = forwardRef<HTMLInputElement, any>(({ className, ...pr
 
 CustomNumericInput.displayName = "CustomNumericInput";
 
+const defaultEmptyValues = {
+  razaoSocial: "",
+  fantasia: "",
+  cpf: "",
+  endereco: "",
+  numero: "",
+  bairro: "",
+  cidade: "",
+  uf: "",
+  cep: "",
+  complemento: "",
+  telefone1: "",
+  telefone2: "",
+  telefone3: "",
+  celular: "",
+  email: "",
+  rg: "",
+  estadoCivil: "",
+  empresa: "",
+  cnae: "",
+  codMunicipioIbge: "",
+  ibge: "",
+  correspEndereco: "",
+  correspBairro: "",
+  correspCidade: "",
+  correspUf: "",
+  correspCep: "",
+  correspComplemento: "",
+  correspNumero: "",
+  foto: "",
+  tipoCadastro: "",
+  ie: "",
+  mdia: "",
+  tDocumento: "",
+  tVencimento: "",
+  tCobranca: "",
+  retencoes: "",
+  simples: "",
+  correios: "",
+  email1: "",
+  email2: "",
+  email3: "",
+  email4: "",
+  email5: "",
+  contribuinte: "N",
+  observacao: "",
+  usaFor: "",
+  crt: "",
+  melhorDia: "",
+  vendedor: "",
+  teste: "",
+  documentosPdf: "",
+  codigoAnterior: "",
+  pessoa: "J",
+  travado: false,
+  ativo: false,
+  inadimplente: false,
+  especial: false,
+  bloqueado: false,
+  moradia: undefined,
+  tipo: undefined,
+  situacao: undefined,
+  vlrMens: undefined,
+  dataCadastro: undefined,
+  dataUltimaCompra: undefined,
+  previsao: undefined,
+};
+
 
 function validarCNPJ(cnpj: string): boolean {
   cnpj = cnpj.replace(/[^\d]+/g, '');
@@ -273,6 +341,7 @@ const UpsertClientForm = ({
       console.log("Ação upsertClient bem-sucedida.");
       queryClient.invalidateQueries({ queryKey: ["clients"] });
       toast.success(initialData ? "Cliente atualizado" : "Cliente criado");
+      form.reset();
       onSuccess();
     },
     onError: (error) => {
@@ -280,6 +349,10 @@ const UpsertClientForm = ({
       toast.error(error.serverError || "Ocorreu um erro inesperado.");
     },
   });
+
+  useEffect(() => {
+    form.reset(initialData || defaultEmptyValues);
+  }, [initialData, form]);
 
   const { execute: executeCnpjSearch, isLoading: isLoadingCnpjSearch } = useAction(getCnpjInfo, {
     onSuccess: (response) => {
