@@ -7,6 +7,7 @@ import { searchClients } from "@/actions/upsert-client";
 import { DataTable } from "@/components/ui/data-table";
 import { Skeleton } from "@/components/ui/skeleton";
 
+import AddClientButton from "./add-client-button";
 import { SearchInput } from "./search-input";
 import { clientsTableColumns } from "./table-columns";
 
@@ -35,7 +36,12 @@ export const ClientsList = () => {
 
   return (
     <>
-      <SearchInput />
+      <div className="mb-4 flex w-full items-center gap-4">
+        <div className="flex-1 min-w-0">
+          <SearchInput />
+        </div>
+          <AddClientButton />
+      </div>
       <DataTable
         columns={clientsTableColumns}
         data={data?.data || []}

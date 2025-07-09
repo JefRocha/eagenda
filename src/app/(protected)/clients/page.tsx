@@ -37,9 +37,7 @@ const ClientsPage = async () => {
             Gerencie os clientes da sua clínica
           </PageDescription>
         </PageHeaderContent>
-        <PageActions>
-          <AddClientButton />
-        </PageActions>
+        
       </PageHeader>
       <PageContent>
         <ClientsList />
