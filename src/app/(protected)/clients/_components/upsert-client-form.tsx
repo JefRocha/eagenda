@@ -692,6 +692,35 @@ const UpsertClientForm = ({
                     )}
                   />
                 </div>
+                <div className="grid grid-cols-1">
+                  <FormField
+                    control={form.control}
+                    name="situacao"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Situação</FormLabel>
+                        <Select
+                          onValueChange={(value) => field.onChange(Number(value))}
+                          value={String(field.value ?? "")}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Selecione a situação" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="1">CADASTRO APROVADO</SelectItem>
+                            <SelectItem value="2">CADASTRO EM OBSERVAÇÃO</SelectItem>
+                            <SelectItem value="3">CADASTRO BLOQUEADO</SelectItem>
+                            <SelectItem value="4">INATIVO</SelectItem>
+                            <SelectItem value="5">SPC</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
                 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <FormField
