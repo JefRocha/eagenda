@@ -8,9 +8,9 @@ import { z } from "zod";
 import { db } from "@/db";
 import { patientsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { actionClient } from "@/lib/next-safe-action";
+import { action } from "@/lib/next-safe-action";
 
-export const deletePatient = actionClient
+export const deletePatient = action
   .schema(
     z.object({
       id: z.string().uuid(),

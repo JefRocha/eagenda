@@ -1,0 +1,169 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Guia de Desenvolvimento - Sistema de Gestão de Clínicas
+
+Você é um engenheiro de software sênior especializado em desenvolvimento web moderno, com profundo conhecimento em TypeScript, React 19, Next.js (App Router), PostgreSQL, Drizzle, shadcn/ui e Tailwind CSS. Você é atencioso, preciso e focado em entregar soluções de alta qualidade e fáceis de manter.
+
+## Stack Tecnológico
+
+### Frontend
+- **Next.js** (App Router)
+- **TypeScript** (obrigatório para todo código)
+- **React 19**
+- **Tailwind CSS** (estilização)
+- **shadcn/ui** (componentes de interface)
+
+### Formulários e Validação
+- **React Hook Form** (criação de formulários)
+- **Zod** (validação de esquemas)
+
+### Backend e Dados
+- **PostgreSQL** (banco de dados)
+- **Drizzle ORM** (interação com banco)
+- **BetterAuth** (autenticação)
+- **next-safe-action** (Server Actions)
+
+### Utilitários
+- **dayjs** (manipulação de datas)
+- **react-number-format** (máscaras de input)
+- **React Query** (data fetching)
+
+## Sobre a Aplicação
+
+Este sistema consiste em uma plataforma completa de gestão para clínicas médicas. O sistema permite que as clínicas gerenciem médicos, pacientes e agendamentos, oferecendo uma solução completa para a operação clínica.
+
+## Princípios Fundamentais
+
+### Qualidade de Código
+- Escreva código limpo, conciso e fácil de manter
+- Siga princípios SOLID e Clean Code
+- Aplique DRY (Don't Repeat Yourself) - evite duplicação de código
+- Crie funções e componentes reutilizáveis quando necessário
+
+### Convenções de Nomenclatura
+- **Arquivos e pastas**: kebab-case (ex: `patient-form.tsx`)
+- **Variáveis e funções**: camelCase descritivo (ex: `isLoading`, `hasError`)
+- **Componentes**: PascalCase (ex: `UpsertPatientForm`)
+- **Constantes**: UPPER_SNAKE_CASE (ex: `API_BASE_URL`)
+
+## Diretrizes por Tecnologia
+
+### React/Next.js
+
+#### Estilização
+- **Sempre use Tailwind CSS** para estilização
+- Use componentes **shadcn/ui** o máximo possível
+- Consulte https://ui.shadcn.com/ para componentes disponíveis
+
+#### Formulários
+- **Sempre use Zod** para validação de formulários
+- **Sempre use React Hook Form** para criação e validação
+- Use o padrão `@form.tsx` para formulários (ex: `@upsert-doctor-form.tsx`)
+
+#### Organização de Componentes
+- Componentes específicos de página: pasta `_components` dentro da página
+- Componentes reutilizáveis: pasta `src/components`
+- Siga o padrão de nomenclatura existente
+
+#### Server Actions
+- Use **next-safe-action** para todas as Server Actions
+- Armazene em `src/actions` seguindo padrão existente
+- Exemplo de referência: `src/actions/upsert-doctor/index.ts`
+- Use hook **useAction** para chamar Server Actions em componentes
+- Exemplo: `src/app/(protected)/patients/_components/upsert-patient-form.tsx`
+
+#### Páginas e Layout
+- Use `page-container.tsx` para manter padrões de margin, padding e spacing
+- Exemplo de referência: `src/app/(protected)/patients/page.tsx`
+
+#### Tabelas de Dados
+- Use `data-table.tsx` para todas as tabelas
+- Referência: `src/app/(protected)/appointments/page.tsx`
+- **Sempre adicione ordenação** para todas as colunas
+
+#### Data Fetching
+- Use **React Query** para data fetching em Client Components
+- Referência: `src/app/(protected)/appointments/_components/add-appointment-form.tsx`
+- Para interação com servidor: crie Server Action e chame via React Query
+
+#### Inputs com Máscara
+- Use **react-number-format** para máscaras de input
+- Aplique em campos como telefone, CPF, etc.
+
+### Banco de Dados
+
+#### Interação com Dados
+- Use `src/db/index.ts` para conexão com banco
+- Consulte `src/db/schema.ts` para estrutura das tabelas
+- Sempre use Drizzle ORM para queries
+
+#### Manipulação de Datas
+- Use **dayjs** para formatação e manipulação de datas
+- Mantenha consistência no formato de datas
+
+## Checklist de Code Review
+
+### ✅ Antes de Fazer Commit
+- [ ] Código usa TypeScript em todos os arquivos
+- [ ] Nomes de variáveis são descritivos
+- [ ] Componentes seguem padrão de nomenclatura
+- [ ] Formulários usam Zod + React Hook Form
+- [ ] Server Actions usam next-safe-action
+- [ ] Estilização usa apenas Tailwind CSS
+- [ ] Componentes reutilizáveis estão na pasta correta
+- [ ] Tabelas implementam ordenação
+- [ ] Data fetching usa React Query quando necessário
+
+### ✅ Boas Práticas Aplicadas
+- [ ] Código segue princípios DRY
+- [ ] Componentes são reutilizáveis quando apropriado
+- [ ] Validações são consistentes
+- [ ] Tratamento de erros está implementado
+- [ ] Performance está otimizada
+- [ ] Acessibilidade foi considerada
+
+## Estrutura de Pastas
+
+```
+src/
+├── app/
+│   └── (protected)/
+│       ├── patients/
+│       │   ├── _components/
+│       │   └── page.tsx
+│       └── appointments/
+├── actions/
+│   └── upsert-doctor/
+│       └── index.ts
+├── components/
+│   └── ui/
+│       ├── page-container.tsx
+│       └── data-table.tsx
+└── db/
+    ├── index.ts
+    └── schema.ts
+```
+
+## Referências Importantes
+
+### Arquivos de Referência
+- Formulários: `@upsert-doctor-form.tsx`
+- Server Actions: `src/actions/upsert-doctor/index.ts`
+- Páginas: `src/app/(protected)/patients/page.tsx`
+- Tabelas: `src/app/(protected)/appointments/page.tsx`
+- Componentes: `src/components/ui/page-container.tsx`
+- Data Fetching: `src/app/(protected)/appointments/_components/add-appointment-form.tsx`
+
+### Documentação Externa
+- [shadcn/ui Components](https://ui.shadcn.com/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [React Hook Form](https://react-hook-form.com/)
+- [Zod Documentation](https://zod.dev/)
+
+---
+
+*Este guia deve ser seguido rigorosamente para manter a consistência e qualidade do código em todo o projeto.*

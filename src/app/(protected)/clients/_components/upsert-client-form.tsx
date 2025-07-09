@@ -8,7 +8,7 @@ import { Loader2, Search } from "lucide-react";
 import { CalendarIcon } from "lucide-react";
 import { forwardRef,useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
-import { NumericFormat } from "react-number-format";
+import { NumericFormat, PatternFormat } from "react-number-format";
 import { toast } from "sonner";
 import { useDebounce } from "use-debounce";
 
@@ -59,9 +59,63 @@ import {
 import { Client } from "@/db/schema";
 import { useAction } from "@/hooks/use-action";
 
-const CustomNumericInput = forwardRef<HTMLInputElement, any>(({ className, ...props }, ref) => (
-  <Input className={className} {...props} ref={ref} />
-));
+//const CustomNumericInput = forwardRef<HTMLInputElement, any>(({ className, ...props }, ref) => (
+//  <Input className={className} {...props} ref={ref} />
+//));
+
+const CustomNumericInput = forwardRef<HTMLInputElement, any>(({ className, ...props }, ref) => {
+  // Remova props que o DOM não entende
+  const {
+    allowLeadingZeros,
+    format,
+    mask,
+    onValueChange,
+    customInput,
+    ...rest
+  } = props;
+
+  return <Input className={className} ref={ref} {...rest} />;
+});
+
+
+CustomNumericInput.displayName = "CustomNumericInput";
+
+
+function validarCNPJ(cnpj: string): boolean {
+  cnpj = cnpj.replace(/[^\d]+/g, '');
+
+  if (cnpj.length !== 14) return false;
+
+  // Rejeita CNPJs com todos os dígitos iguais (ex: 00000000000000)
+  if (/^(\d)\1+$/.test(cnpj)) return false;
+
+  let tamanho = cnpj.length - 2;
+  let numeros = cnpj.substring(0, tamanho);
+  const digitos = cnpj.substring(tamanho);
+  let soma = 0;
+  let pos = tamanho - 7;
+
+  for (let i = tamanho; i >= 1; i--) {
+    soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
+    if (pos < 2) pos = 9;
+  }
+
+  let resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
+  if (resultado !== parseInt(digitos.charAt(0))) return false;
+
+  tamanho += 1;
+  numeros = cnpj.substring(0, tamanho);
+  soma = 0;
+  pos = tamanho - 7;
+
+  for (let i = tamanho; i >= 1; i--) {
+    soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
+    if (pos < 2) pos = 9;
+  }
+
+  resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
+  return resultado === parseInt(digitos.charAt(1));
+}
 
 interface UpsertClientFormProps {
   initialData?: Client;
@@ -247,6 +301,7 @@ const UpsertClientForm = ({
         const rawCpfCnpj = response.data.data.cnpj || response.data.data.cpf;
         if (rawCpfCnpj) {
           const cleanedValue = rawCpfCnpj.replace(/\D/g, '');
+          form.setValue("pessoa", "J"); // Define o tipo de pessoa como Jurídica
           form.setValue("cpf", cleanedValue);
         }
 
@@ -272,15 +327,24 @@ const UpsertClientForm = ({
   const pessoaValue = form.watch("pessoa");
 
   const handleCnpjSearch = () => {
-    const cleanedCnpj = cpfValue ? cpfValue.replace(/\D/g, "") : "";
-    if (pessoaValue === "J" && cleanedCnpj.length === 14) {
-      executeCnpjSearch({ cnpj: cpfValue });
-    } else if (pessoaValue === "J" && cleanedCnpj.length !== 14) {
-      toast.error("Por favor, insira um CNPJ válido com 14 dígitos.");
-    } else if (pessoaValue === "F") {
-      toast.info("A busca de CNPJ é apenas para Pessoa Jurídica.");
+  const cleanedCnpj = cpfValue ? cpfValue.replace(/\D/g, "") : "";
+
+  if (pessoaValue === "J") {
+    if (cleanedCnpj.length !== 14) {
+      toast.error("Por favor, insira um CNPJ com 14 dígitos.");
+      return;
     }
-  };
+
+    if (!validarCNPJ(cleanedCnpj)) {
+      toast.error("CNPJ inválido.");
+      return;
+    }
+
+    executeCnpjSearch({ cnpj: cleanedCnpj });
+  } else {
+    toast.info("A busca de CNPJ é apenas para Pessoa Jurídica.");
+  }
+};
 
   const cepValue = form.watch("cep");
   const enderecoValue = form.watch("endereco"); // Adicionado: Observa o valor do campo endereco
@@ -407,8 +471,7 @@ const UpsertClientForm = ({
                         <FormLabel>{form.watch("pessoa") === "J" ? "CNPJ" : "CPF"}</FormLabel>
                         <div className="flex items-center space-x-2">
                           <FormControl>
-                            <NumericFormat
-                              key={cpfValue}
+                            <PatternFormat
                               format={form.watch("pessoa") === "J" ? "##.###.###/####-##" : "###.###.###-##"}
                               mask="_"
                               value={field.value || ""}

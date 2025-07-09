@@ -1,8 +1,8 @@
-"use client";
-
-import { Edit, MoreHorizontal, Trash } from "lucide-react";
+import { EditIcon, MoreVerticalIcon, TrashIcon } from "lucide-react";
+import { useAction } from "next-safe-action/hooks";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { deleteClient } from "@/actions/delete-client";
 import {
@@ -17,6 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Dialog } from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,21 +27,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet } from "@/components/ui/sheet";
-import { Client } from "@/db/schema";
-import { useAction } from "@/hooks/use-action";
+import { clientsTable } from "@/db/schema";
 
 import UpsertClientForm from "./upsert-client-form";
 
 interface ClientsTableActionsProps {
-  client: Client;
+  client: typeof clientsTable.$inferSelect;
 }
 
-export const ClientsTableActions = ({ client }: ClientsTableActionsProps) => {
+const ClientsTableActions = ({ client }: ClientsTableActionsProps) => {
   const [upsertSheetIsOpen, setUpsertSheetIsOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const deleteClientAction = useAction(deleteClient, {
     onSuccess: () => {
       toast.success("Cliente excluído com sucesso.");
+      queryClient.invalidateQueries({ queryKey: ["clients"] });
     },
     onError: () => {
       toast.error("Erro ao deletar cliente.");
@@ -56,25 +58,23 @@ export const ClientsTableActions = ({ client }: ClientsTableActionsProps) => {
     <>
       <Sheet open={upsertSheetIsOpen} onOpenChange={setUpsertSheetIsOpen}>
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger>
             <Button variant="ghost" size="icon">
-              <MoreHorizontal className="h-4 w-4" />
+              <MoreVerticalIcon className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuLabel>{client.fantasia}</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onSelect={() => setUpsertSheetIsOpen(true)}
-              className="cursor-pointer"
-            >
-              <Edit className="mr-2 h-4 w-4" />
+            <DropdownMenuItem onClick={() => setUpsertSheetIsOpen(true)}>
+              <EditIcon />
               Editar
             </DropdownMenuItem>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <DropdownMenuItem className="cursor-pointer" onSelect={(e) => e.preventDefault()}>
-                  <Trash className="mr-2 h-4 w-4" /> Excluir
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                  <TrashIcon />
+                  Excluir
                 </DropdownMenuItem>
               </AlertDialogTrigger>
               <AlertDialogContent>
@@ -83,7 +83,8 @@ export const ClientsTableActions = ({ client }: ClientsTableActionsProps) => {
                     Tem certeza que deseja excluir esse cliente?
                   </AlertDialogTitle>
                   <AlertDialogDescription>
-                    Essa ação não pode ser revertida. Isso irá deletar o cliente.
+                    Essa ação não pode ser revertida. Isso irá deletar o
+                    paciente e todas as consultas agendadas.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -106,3 +107,6 @@ export const ClientsTableActions = ({ client }: ClientsTableActionsProps) => {
     </>
   );
 };
+
+export default ClientsTableActions;
+

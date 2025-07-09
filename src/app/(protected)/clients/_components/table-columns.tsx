@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Client } from "@/db/schema";
 import { formatDate } from "@/helpers/time";
 
-import { ClientsTableActions } from "./table-actions";
+import ClientsTableActions from "./table-actions";
 
 const formatCnpjCpf = (value: string | null) => {
   if (!value) return "";
