@@ -52,18 +52,7 @@ const LoginForm = () => {
       },
       {
         onSuccess: async () => {
-          const session = await authClient.session.get(); // 👈 busca os dados do usuário
-
-          if (session?.user.role === "SUPER_ADMIN") {
-            router.push("/admin");
-          } else if (
-            session?.user.role === "MASTER" &&
-            session?.user.clinic?.id
-          ) {
-            router.push(`/clinic/${session.user.clinic.id}`);
-          } else {
-            router.push("/dashboard"); // fallback para outros
-          }
+          router.refresh();
         },
       },
     );

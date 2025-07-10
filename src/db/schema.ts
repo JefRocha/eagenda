@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import { relations } from "drizzle-orm";
 import {
   boolean,
@@ -115,6 +116,7 @@ export const usersToClinicsTable = pgTable("users_to_clinics", {
   clinicId: uuid("clinic_id")
     .notNull()
     .references(() => clinicsTable.id, { onDelete: "cascade" }),
+  permissions: text("permissions").array().default(sql`ARRAY[]::text[]`),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -379,3 +381,16 @@ export const appointmentsTableRelations = relations(
     }),
   }),
 );
+
+export const permissionsTable = pgTable("permissions", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull().unique(), // exemplo: "view_clients", "edit_exams"
+  description: text("description"),
+});
+
+export const userPermissionsTable = pgTable("user_permissions", {
+  userId: text("user_id").references(() => usersTable.id, { onDelete: "cascade" }).notNull(),
+  permissionId: text("permission_id").references(() => permissionsTable.id, { onDelete: "cascade" }).notNull(),
+  clinicId: uuid("clinic_id").references(() => clinicsTable.id, { onDelete: "cascade" }).notNull(), // 👈 opcional por clínica
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
