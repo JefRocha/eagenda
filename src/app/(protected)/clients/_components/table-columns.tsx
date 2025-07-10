@@ -6,6 +6,7 @@ import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Client } from "@/db/schema";
 import { formatDate } from "@/helpers/time";
+import { cn } from "@/lib/utils";
 
 import ClientsTableActions from "./table-actions";
 
@@ -56,6 +57,15 @@ export const clientsTableColumns: ColumnDef<Client>[] = [
           Razão Social
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const isBlocked = row.original.situacao === 3;
+
+      return (
+        <span className={cn({ "text-red-500": isBlocked })}>
+          {row.original.razaoSocial}
+        </span>
       );
     },
   },

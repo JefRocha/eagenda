@@ -686,25 +686,61 @@ const UpsertClientForm = ({
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="fantasia"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome Fantasia</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Nome Fantasia"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(e.target.value.toUpperCase())
+                <div className="grid grid-cols-10 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="fantasia"
+                    render={({ field }) => (
+                      <FormItem className="col-span-7">
+                        <FormLabel>Nome Fantasia</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Nome Fantasia"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(e.target.value.toUpperCase())
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="situacao"
+                    render={({ field }) => (
+                      <FormItem className="col-span-3">
+                        <FormLabel>Situação</FormLabel>
+                        <Select
+                          onValueChange={(value) =>
+                            field.onChange(Number(value))
                           }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                          value={String(field.value ?? "")}
+                          disabled={!canEditSituacao} // <- aqui está a proteção
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Selecione a situação" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="1">CADASTRO APROVADO</SelectItem>
+                            <SelectItem value="2">
+                              CADASTRO EM OBSERVAÇÃO
+                            </SelectItem>
+                            <SelectItem value="3">
+                              CADASTRO BLOQUEADO
+                            </SelectItem>
+                            <SelectItem value="4">INATIVO</SelectItem>
+                            <SelectItem value="5">SPC</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <FormField
                     control={form.control}
@@ -774,42 +810,7 @@ const UpsertClientForm = ({
                     )}
                   />
                 </div>
-                <div className="grid grid-cols-1">
-                  <FormField
-                    control={form.control}
-                    name="situacao"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Situação</FormLabel>
-                        <Select
-                          onValueChange={(value) =>
-                            field.onChange(Number(value))
-                          }
-                          value={String(field.value ?? "")}
-                          disabled={!canEditSituacao} // <- aqui está a proteção
-                        >
-                          <FormControl>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Selecione a situação" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="1">CADASTRO APROVADO</SelectItem>
-                            <SelectItem value="2">
-                              CADASTRO EM OBSERVAÇÃO
-                            </SelectItem>
-                            <SelectItem value="3">
-                              CADASTRO BLOQUEADO
-                            </SelectItem>
-                            <SelectItem value="4">INATIVO</SelectItem>
-                            <SelectItem value="5">SPC</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <FormField

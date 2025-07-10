@@ -137,6 +137,17 @@ export function AppSidebar() {
                     <SidebarMenuSubItem>
                       <SidebarMenuSubButton
                         asChild
+                        isActive={pathname === "/users"}
+                      >
+                        <Link href="/users">
+                          <UsersRound />
+                          <span>Usuários</span>
+                        </Link>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton
+                        asChild
                         isActive={pathname === "/clients"}
                       >
                         <Link href="/clients">

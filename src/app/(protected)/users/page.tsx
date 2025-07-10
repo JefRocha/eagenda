@@ -1,33 +1,44 @@
-// app/(protected)/users/page.tsx
-import Link from "next/link";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
-import { db } from "@/db";
-import { usersTable } from "@/db/schema";
+import {
+  PageContainer,
+  PageContent,
+  PageDescription,
+  PageHeader,
+  PageHeaderContent,
+  PageTitle,
+} from "@/components/ui/page-container";
 import { auth } from "@/lib/auth";
 
-export default async function UsersPage() {
-  const session = await auth.api.getSession();
-  if (!session?.user) return null;
+import { UsersList } from "./_components/users-list";
 
-  const users = await db.select().from(usersTable);
+const UsersPage = async () => {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user) {
+    redirect("/authentication");
+  }
+
+  if (!session.user.clinic) {
+    redirect("/clinic-form");
+  }
 
   return (
-    <div>
-      <h1>Usuários</h1>
-      <table>
-        <thead><tr><th>Nome</th><th>Email</th><th>Permissões</th></tr></thead>
-        <tbody>
-          {users.map(u => (
-            <tr key={u.id}>
-              <td>{u.name}</td>
-              <td>{u.email}</td>
-              <td>
-                <Link href={`/protected/${u.id}/permissions`}>Edit Permissões</Link>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <PageContainer>
+      <PageHeader>
+        <PageHeaderContent>
+          <PageTitle>Usuários</PageTitle>
+          <PageDescription>Gerencie os usuários da sua clínica</PageDescription>
+        </PageHeaderContent>
+      </PageHeader>
+      <PageContent>
+        <UsersList />
+      </PageContent>
+    </PageContainer>
   );
-}
+};
+
+export default UsersPage;
