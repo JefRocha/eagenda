@@ -23,8 +23,10 @@ export class UserPermissionsService {
       .select()
       .from(usersToClinicsTable)
       .where(
-        usersToClinicsTable.userId.equals(userId),
-        usersToClinicsTable.clinicId.equals(clinicId)
+        and(
+          eq(usersToClinicsTable.userId, userId),
+          eq(usersToClinicsTable.clinicId, clinicId)
+        )
       )
       .limit(1)
       .then((r) => r[0]);

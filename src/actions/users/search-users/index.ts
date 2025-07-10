@@ -1,10 +1,11 @@
 "use server";
 
-import { and, count, desc, eq, ilike, or, asc, inArray } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, inArray,or } from "drizzle-orm";
 
 import { db } from "@/db";
 import { usersTable, usersToClinicsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 interface SearchUsersParams {
   search?: string;
@@ -14,8 +15,10 @@ interface SearchUsersParams {
 }
 
 export const searchUsers = async (params: SearchUsersParams) => {
-  const session = await auth.api.getSession();
+  const session = await auth.api.getSession({ headers: await headers() });
   const loggedInUserId = session?.user.id;
+
+  console.log("searchUsers: loggedInUserId", loggedInUserId);
 
   if (!loggedInUserId) {
     throw new Error("User not authenticated");
@@ -32,11 +35,29 @@ export const searchUsers = async (params: SearchUsersParams) => {
     .where(eq(usersToClinicsTable.userId, loggedInUserId))
     .limit(1);
 
+  const clinicIdResult = await clinicIdSubquery;
+  const clinicId = clinicIdResult[0]?.value;
+
+  console.log("searchUsers: clinicId", clinicId);
+
+  if (!clinicId) {
+    console.log("searchUsers: No clinicId found, returning empty data.");
+    return {
+      data: [],
+      pagination: {
+        page,
+        pageSize,
+        total: 0,
+        totalPages: 0,
+      },
+    };
+  }
+
   // Subquery to get all user IDs from that clinic
   const userIdsInClinicSubquery = db
     .select({ userId: usersToClinicsTable.userId })
     .from(usersToClinicsTable)
-    .where(eq(usersToClinicsTable.clinicId, clinicIdSubquery));
+    .where(eq(usersToClinicsTable.clinicId, clinicId));
 
   const where = and(
     inArray(usersTable.id, userIdsInClinicSubquery),

@@ -58,11 +58,13 @@ export const UpsertUserForm = ({
           name: initialData.name,
           email: initialData.email,
           role: initialData.role,
+          password: "", // Adicionado para edição, mas não será exibido
         }
       : {
           name: "",
           email: "",
           role: "USER",
+          password: "", // Adicionado para criação
         },
   });
 
@@ -85,12 +87,14 @@ export const UpsertUserForm = ({
         name: initialData.name,
         email: initialData.email,
         role: initialData.role,
+        password: "", // Adicionado para edição, mas não será exibido
       });
     } else {
       form.reset({
         name: "",
         email: "",
         role: "USER",
+        password: "", // Adicionado para criação
       });
     }
   }, [initialData, form]);
@@ -166,6 +170,25 @@ export const UpsertUserForm = ({
                 </FormItem>
               )}
             />
+            {!initialData && (
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Senha</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Senha do usuário"
+                        {...field}
+                        type="password"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             <DialogFooter>
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancelar

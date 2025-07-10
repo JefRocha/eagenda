@@ -1,20 +1,59 @@
-// app/(protected)/[userId]/permissions/page.tsx
-import { auth } from "@/lib/auth"; // ou seu helper para obter sessão
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
-import PermissionForm from "./form";
+import { getUserPermissions } from "@/actions/users/get-user-permissions";
+import {
+  PageContainer,
+  PageContent,
+  PageDescription,
+  PageHeader,
+  PageHeaderContent,
+  PageTitle,
+} from "@/components/ui/page-container";
+import { auth } from "@/lib/auth";
+import { PermissionsList } from "@/modules/permissions/list";
 
-interface PageProps {
-  params: { userId: string };
+import { PermissionsForm } from "./_components/permissions-form";
+
+interface UserPermissionsPageProps {
+  params: {
+    userId: string;
+  };
 }
 
-export default async function PermissionsPage({ params: { userId } }: PageProps) {
-  const session = await auth.api.getSession();
-  if (!session?.user) return <div>Acesso negado.</div>;
+const UserPermissionsPage = async ({ params }: UserPermissionsPageProps) => {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user || session.user.role !== "MASTER") {
+    redirect("/authentication");
+  }
+
+  const { permissions: initialPermissions } = await getUserPermissions(
+    params.userId,
+  );
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl mb-4">Permissões do usuário {userId}</h1>
-      <PermissionForm userId={userId} />
-    </div>
+    <PageContainer>
+      <PageHeader>
+        <PageHeaderContent>
+          <PageTitle>Gerenciar Permissões</PageTitle>
+          <PageDescription>Atribua permissões para o usuário.</PageDescription>
+        </PageHeaderContent>
+      </PageHeader>
+      <PageContent>
+        <div className="mb-8">
+          <h2 className="text-lg font-semibold mb-2">Permissões Atuais:</h2>
+          <PermissionsList permissions={initialPermissions} />
+        </div>
+        <PermissionsForm
+          userId={params.userId}
+          initialPermissions={initialPermissions}
+        />
+      </PageContent>
+    </PageContainer>
   );
-}
+};
+
+export default UserPermissionsPage;
