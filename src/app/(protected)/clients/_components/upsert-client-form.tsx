@@ -6,7 +6,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Loader2, Search } from "lucide-react";
 import { CalendarIcon } from "lucide-react";
-import { forwardRef,useEffect, useRef } from "react";
+import { forwardRef, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { NumericFormat, PatternFormat } from "react-number-format";
 import { toast } from "sonner";
@@ -58,25 +58,27 @@ import {
 } from "@/components/ui/tooltip";
 import { Client } from "@/db/schema";
 import { useAction } from "@/hooks/use-action";
+import { useUserRole } from "@/hooks/useUserRole";
 
 //const CustomNumericInput = forwardRef<HTMLInputElement, any>(({ className, ...props }, ref) => (
 //  <Input className={className} {...props} ref={ref} />
 //));
 
-const CustomNumericInput = forwardRef<HTMLInputElement, any>(({ className, ...props }, ref) => {
-  // Remova props que o DOM não entende
-  const {
-    allowLeadingZeros,
-    format,
-    mask,
-    onValueChange,
-    customInput,
-    ...rest
-  } = props;
+const CustomNumericInput = forwardRef<HTMLInputElement, any>(
+  ({ className, ...props }, ref) => {
+    // Remova props que o DOM não entende
+    const {
+      allowLeadingZeros,
+      format,
+      mask,
+      onValueChange,
+      customInput,
+      ...rest
+    } = props;
 
-  return <Input className={className} ref={ref} {...rest} />;
-});
-
+    return <Input className={className} ref={ref} {...rest} />;
+  },
+);
 
 CustomNumericInput.displayName = "CustomNumericInput";
 
@@ -148,9 +150,8 @@ const defaultEmptyValues = {
   previsao: undefined,
 };
 
-
 function validarCNPJ(cnpj: string): boolean {
-  cnpj = cnpj.replace(/[^\d]+/g, '');
+  cnpj = cnpj.replace(/[^\d]+/g, "");
 
   if (cnpj.length !== 14) return false;
 
@@ -196,6 +197,10 @@ const UpsertClientForm = ({
   isOpen,
   onSuccess,
 }: UpsertClientFormProps) => {
+  const userRole = useUserRole();
+  const canEditSituacao = ["SUPER_ADMIN", "MASTER"].includes(
+    userRole?.toUpperCase?.() ?? "",
+  );
   const queryClient = useQueryClient();
   const form = useForm<upsertClientSchema>({
     resolver: zodResolver(upsertClientSchema),
@@ -354,42 +359,73 @@ const UpsertClientForm = ({
     form.reset(initialData || defaultEmptyValues);
   }, [initialData, form]);
 
-  const { execute: executeCnpjSearch, isLoading: isLoadingCnpjSearch } = useAction(getCnpjInfo, {
-    onSuccess: (response) => {
-      if (response.data.success) {
-        form.setValue("razaoSocial", (response.data.data.nome || "").toUpperCase());
-        form.setValue("fantasia", (response.data.data.fantasia || response.data.data.nome || "").toUpperCase());
-        form.setValue("endereco", (response.data.data.logradouro || "").toUpperCase());
-        form.setValue("numero", (response.data.data.numero || "").toUpperCase());
-        form.setValue("complemento", (response.data.data.complemento || "").toUpperCase());
-        form.setValue("bairro", (response.data.data.bairro || "").toUpperCase());
-        form.setValue("cidade", (response.data.data.municipio || "").toUpperCase());
-        form.setValue("uf", (response.data.data.uf || "").toUpperCase());
-        form.setValue("cep", response.data.data.cep || "");
-        form.setValue("ie", (response.data.data.ie || "").toUpperCase());
-        form.setValue("cnae", (response.data.data.cnae_fiscal || "").toUpperCase());
-        form.setValue("telefone1", response.data.data.telefone || "");
-        form.setValue("email", response.data.data.email || "");
+  const { execute: executeCnpjSearch, isLoading: isLoadingCnpjSearch } =
+    useAction(getCnpjInfo, {
+      onSuccess: (response) => {
+        if (response.data.success) {
+          form.setValue(
+            "razaoSocial",
+            (response.data.data.nome || "").toUpperCase(),
+          );
+          form.setValue(
+            "fantasia",
+            (
+              response.data.data.fantasia ||
+              response.data.data.nome ||
+              ""
+            ).toUpperCase(),
+          );
+          form.setValue(
+            "endereco",
+            (response.data.data.logradouro || "").toUpperCase(),
+          );
+          form.setValue(
+            "numero",
+            (response.data.data.numero || "").toUpperCase(),
+          );
+          form.setValue(
+            "complemento",
+            (response.data.data.complemento || "").toUpperCase(),
+          );
+          form.setValue(
+            "bairro",
+            (response.data.data.bairro || "").toUpperCase(),
+          );
+          form.setValue(
+            "cidade",
+            (response.data.data.municipio || "").toUpperCase(),
+          );
+          form.setValue("uf", (response.data.data.uf || "").toUpperCase());
+          form.setValue("cep", response.data.data.cep || "");
+          form.setValue("ie", (response.data.data.ie || "").toUpperCase());
+          form.setValue(
+            "cnae",
+            (response.data.data.cnae_fiscal || "").toUpperCase(),
+          );
+          form.setValue("telefone1", response.data.data.telefone || "");
+          form.setValue("email", response.data.data.email || "");
 
-        const rawCpfCnpj = response.data.data.cnpj || response.data.data.cpf;
-        if (rawCpfCnpj) {
-          const cleanedValue = rawCpfCnpj.replace(/\D/g, '');
-          form.setValue("pessoa", "J"); // Define o tipo de pessoa como Jurídica
-          form.setValue("cpf", cleanedValue);
+          const rawCpfCnpj = response.data.data.cnpj || response.data.data.cpf;
+          if (rawCpfCnpj) {
+            const cleanedValue = rawCpfCnpj.replace(/\D/g, "");
+            form.setValue("pessoa", "J"); // Define o tipo de pessoa como Jurídica
+            form.setValue("cpf", cleanedValue);
+          }
+
+          toast.success("Dados do CNPJ preenchidos com sucesso!");
+          setTimeout(() => {
+            form.setFocus("cpf");
+          }, 0);
+        } else {
+          toast.error(response.data.error || "Erro ao buscar CNPJ.");
         }
-
-        toast.success("Dados do CNPJ preenchidos com sucesso!");
-        setTimeout(() => {
-          form.setFocus("cpf");
-        }, 0);
-      } else {
-        toast.error(response.data.error || "Erro ao buscar CNPJ.");
-      }
-    },
-    onError: (error) => {
-      toast.error(error.serverError || "Ocorreu um erro inesperado ao buscar CNPJ.");
-    },
-  });
+      },
+      onError: (error) => {
+        toast.error(
+          error.serverError || "Ocorreu um erro inesperado ao buscar CNPJ.",
+        );
+      },
+    });
 
   const onSubmit = (values: upsertClientSchema) => {
     console.log("Dados do formulário enviados:", values);
@@ -400,24 +436,24 @@ const UpsertClientForm = ({
   const pessoaValue = form.watch("pessoa");
 
   const handleCnpjSearch = () => {
-  const cleanedCnpj = cpfValue ? cpfValue.replace(/\D/g, "") : "";
+    const cleanedCnpj = cpfValue ? cpfValue.replace(/\D/g, "") : "";
 
-  if (pessoaValue === "J") {
-    if (cleanedCnpj.length !== 14) {
-      toast.error("Por favor, insira um CNPJ com 14 dígitos.");
-      return;
+    if (pessoaValue === "J") {
+      if (cleanedCnpj.length !== 14) {
+        toast.error("Por favor, insira um CNPJ com 14 dígitos.");
+        return;
+      }
+
+      if (!validarCNPJ(cleanedCnpj)) {
+        toast.error("CNPJ inválido.");
+        return;
+      }
+
+      executeCnpjSearch({ cnpj: cleanedCnpj });
+    } else {
+      toast.info("A busca de CNPJ é apenas para Pessoa Jurídica.");
     }
-
-    if (!validarCNPJ(cleanedCnpj)) {
-      toast.error("CNPJ inválido.");
-      return;
-    }
-
-    executeCnpjSearch({ cnpj: cleanedCnpj });
-  } else {
-    toast.info("A busca de CNPJ é apenas para Pessoa Jurídica.");
-  }
-};
+  };
 
   const cepValue = form.watch("cep");
   const enderecoValue = form.watch("endereco"); // Adicionado: Observa o valor do campo endereco
@@ -430,7 +466,11 @@ const UpsertClientForm = ({
   useEffect(() => {
     const fetchAddress = async () => {
       // Condição: CEP preenchido (8 dígitos) E Endereço vazio
-      if (debouncedCep && debouncedCep.replace(/\D/g, "").length === 8 && !enderecoValue) {
+      if (
+        debouncedCep &&
+        debouncedCep.replace(/\D/g, "").length === 8 &&
+        !enderecoValue
+      ) {
         console.log("Searching CEP:", debouncedCep);
         try {
           const response = await fetch(
@@ -459,7 +499,11 @@ const UpsertClientForm = ({
 
   useEffect(() => {
     const fetchCorrespAddress = async () => {
-      if (debouncedCorrespCep && debouncedCorrespCep.replace(/\D/g, "").length === 8 && !correspEnderecoValue) {
+      if (
+        debouncedCorrespCep &&
+        debouncedCorrespCep.replace(/\D/g, "").length === 8 &&
+        !correspEnderecoValue
+      ) {
         console.log("Searching Corresp CEP:", debouncedCorrespCep);
         try {
           const response = await fetch(
@@ -489,7 +533,10 @@ const UpsertClientForm = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onSuccess}>
-      <DialogContent hideCloseButton className="max-h-[90vh] w-full max-w-5xl overflow-y-auto">
+      <DialogContent
+        hideCloseButton
+        className="max-h-[90vh] w-full max-w-5xl overflow-y-auto"
+      >
         <DialogHeader>
           <DialogTitle>
             {initialData ? "Editar Cliente" : "Novo Cliente"}
@@ -510,7 +557,6 @@ const UpsertClientForm = ({
                 <TabsTrigger value="contato">Contato</TabsTrigger>
               </TabsList>
               <TabsContent value="geral" className="space-y-4 py-4">
-                
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-3">
                   <FormField
                     control={form.control}
@@ -541,18 +587,28 @@ const UpsertClientForm = ({
                     name="cpf"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{form.watch("pessoa") === "J" ? "CNPJ" : "CPF"}</FormLabel>
+                        <FormLabel>
+                          {form.watch("pessoa") === "J" ? "CNPJ" : "CPF"}
+                        </FormLabel>
                         <div className="flex items-center space-x-2">
                           <FormControl>
                             <PatternFormat
-                              format={form.watch("pessoa") === "J" ? "##.###.###/####-##" : "###.###.###-##"}
+                              format={
+                                form.watch("pessoa") === "J"
+                                  ? "##.###.###/####-##"
+                                  : "###.###.###-##"
+                              }
                               mask="_"
                               value={field.value || ""}
                               onValueChange={(values) => {
                                 field.onChange(values.value);
                               }}
                               customInput={CustomNumericInput}
-                              placeholder={form.watch("pessoa") === "J" ? "00.000.000/0000-00" : "000.000.000-00"}
+                              placeholder={
+                                form.watch("pessoa") === "J"
+                                  ? "00.000.000/0000-00"
+                                  : "000.000.000-00"
+                              }
                               allowLeadingZeros={true}
                             />
                           </FormControl>
@@ -564,7 +620,12 @@ const UpsertClientForm = ({
                                     type="button"
                                     size="icon"
                                     onClick={handleCnpjSearch}
-                                    disabled={isLoadingCnpjSearch || !form.getValues("cpf") || form.getValues("cpf").replace(/\D/g, "").length !== 14}
+                                    disabled={
+                                      isLoadingCnpjSearch ||
+                                      !form.getValues("cpf") ||
+                                      form.getValues("cpf").replace(/\D/g, "")
+                                        .length !== 14
+                                    }
                                   >
                                     {isLoadingCnpjSearch ? (
                                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -595,7 +656,9 @@ const UpsertClientForm = ({
                             placeholder="Inscrição Estadual"
                             {...field}
                             className="w-full"
-                            onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                            onChange={(e) =>
+                              field.onChange(e.target.value.toUpperCase())
+                            }
                           />
                         </FormControl>
                         <FormMessage />
@@ -603,7 +666,7 @@ const UpsertClientForm = ({
                     )}
                   />
                 </div>
-                
+
                 <FormField
                   control={form.control}
                   name="razaoSocial"
@@ -614,7 +677,9 @@ const UpsertClientForm = ({
                         <Input
                           placeholder="Razão Social"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                          onChange={(e) =>
+                            field.onChange(e.target.value.toUpperCase())
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -631,7 +696,9 @@ const UpsertClientForm = ({
                         <Input
                           placeholder="Nome Fantasia"
                           {...field}
-                          onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                          onChange={(e) =>
+                            field.onChange(e.target.value.toUpperCase())
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -649,7 +716,9 @@ const UpsertClientForm = ({
                           <Input
                             placeholder="CNAE"
                             {...field}
-                            onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                            onChange={(e) =>
+                              field.onChange(e.target.value.toUpperCase())
+                            }
                           />
                         </FormControl>
                         <FormMessage />
@@ -663,7 +732,10 @@ const UpsertClientForm = ({
                       <FormItem>
                         <FormLabel>Cód. Município IBGE</FormLabel>
                         <FormControl>
-                          <Input placeholder="Código Município IBGE" {...field} />
+                          <Input
+                            placeholder="Código Município IBGE"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -675,16 +747,26 @@ const UpsertClientForm = ({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Regime Tributário</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger className="w-full">
                               <SelectValue placeholder="Selecione o Regime" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="SIMPLES NACIONAL">SIMPLES NACIONAL</SelectItem>
-                            <SelectItem value="SIMPLES NACIONAL - EXCESSO DE SUBLIMITE DA RECEITA BRUTA">SIMPLES NACIONAL - EXCESSO DE SUBLIMITE DA RECEITA BRUTA</SelectItem>
-                            <SelectItem value="REGIME NORMAL">REGIME NORMAL</SelectItem>
+                            <SelectItem value="SIMPLES NACIONAL">
+                              SIMPLES NACIONAL
+                            </SelectItem>
+                            <SelectItem value="SIMPLES NACIONAL - EXCESSO DE SUBLIMITE DA RECEITA BRUTA">
+                              SIMPLES NACIONAL - EXCESSO DE SUBLIMITE DA RECEITA
+                              BRUTA
+                            </SelectItem>
+                            <SelectItem value="REGIME NORMAL">
+                              REGIME NORMAL
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -700,8 +782,11 @@ const UpsertClientForm = ({
                       <FormItem>
                         <FormLabel>Situação</FormLabel>
                         <Select
-                          onValueChange={(value) => field.onChange(Number(value))}
+                          onValueChange={(value) =>
+                            field.onChange(Number(value))
+                          }
                           value={String(field.value ?? "")}
+                          disabled={!canEditSituacao} // <- aqui está a proteção
                         >
                           <FormControl>
                             <SelectTrigger className="w-full">
@@ -710,8 +795,12 @@ const UpsertClientForm = ({
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="1">CADASTRO APROVADO</SelectItem>
-                            <SelectItem value="2">CADASTRO EM OBSERVAÇÃO</SelectItem>
-                            <SelectItem value="3">CADASTRO BLOQUEADO</SelectItem>
+                            <SelectItem value="2">
+                              CADASTRO EM OBSERVAÇÃO
+                            </SelectItem>
+                            <SelectItem value="3">
+                              CADASTRO BLOQUEADO
+                            </SelectItem>
                             <SelectItem value="4">INATIVO</SelectItem>
                             <SelectItem value="5">SPC</SelectItem>
                           </SelectContent>
@@ -721,7 +810,7 @@ const UpsertClientForm = ({
                     )}
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <FormField
                     control={form.control}
@@ -730,14 +819,18 @@ const UpsertClientForm = ({
                       <FormItem>
                         <FormLabel>Tipo Documento</FormLabel>
                         <Select
-                          onValueChange={field.onChange} defaultValue={field.value}>
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger className="w-full">
                               <SelectValue placeholder="Selecione o tipo" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="NOTA FISCAL">NOTA FISCAL</SelectItem>
+                            <SelectItem value="NOTA FISCAL">
+                              NOTA FISCAL
+                            </SelectItem>
                             <SelectItem value="RECIBO">RECIBO</SelectItem>
                             <SelectItem value="OUTROS">OUTROS</SelectItem>
                           </SelectContent>
@@ -752,15 +845,22 @@ const UpsertClientForm = ({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Tipo Vencimento</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger className="w-full">
                               <SelectValue placeholder="Selecione o tipo" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="NO MESMO MÊS">NO MESMO MÊS</SelectItem>
-                            <SelectItem value="MÊS SUB-SEQUENTE">MÊS SUB-SEQUENTE</SelectItem>
+                            <SelectItem value="NO MESMO MÊS">
+                              NO MESMO MÊS
+                            </SelectItem>
+                            <SelectItem value="MÊS SUB-SEQUENTE">
+                              MÊS SUB-SEQUENTE
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -773,15 +873,22 @@ const UpsertClientForm = ({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Tipo Cobrança</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger className="w-full">
                               <SelectValue placeholder="Selecione o tipo" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="BOLETO BANCÁRIO">BOLETO BANCÁRIO</SelectItem>
-                            <SelectItem value="DEPÓSITO EM CONTA">DEPÓSITO EM CONTA</SelectItem>
+                            <SelectItem value="BOLETO BANCÁRIO">
+                              BOLETO BANCÁRIO
+                            </SelectItem>
+                            <SelectItem value="DEPÓSITO EM CONTA">
+                              DEPÓSITO EM CONTA
+                            </SelectItem>
                             <SelectItem value="CARTEIRA">CARTEIRA</SelectItem>
                             <SelectItem value="OUTROS">OUTROS</SelectItem>
                           </SelectContent>
@@ -854,10 +961,9 @@ const UpsertClientForm = ({
                     )}
                   />
                 </div>
-                
-                </TabsContent>
+              </TabsContent>
               <TabsContent value="endereco" className="space-y-4 py-4">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
                   <FormField
                     control={form.control}
                     name="cep"
@@ -890,7 +996,9 @@ const UpsertClientForm = ({
                           <Input
                             placeholder="Endereço"
                             {...field}
-                            onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                            onChange={(e) =>
+                              field.onChange(e.target.value.toUpperCase())
+                            }
                           />
                         </FormControl>
                         <FormMessage />
@@ -898,224 +1006,248 @@ const UpsertClientForm = ({
                     )}
                   />
                   <FormField
-                  control={form.control}
-                  name="numero"
-                  render={({ field }) => (
-                    <FormItem className="col-span-12 md:col-span-2">
-                      <FormLabel>Número</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Número"
-                          {...field}
-                          onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    control={form.control}
+                    name="numero"
+                    render={({ field }) => (
+                      <FormItem className="col-span-12 md:col-span-2">
+                        <FormLabel>Número</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Número"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(e.target.value.toUpperCase())
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                <FormField
-                  control={form.control}
-                  name="complemento"
-                  render={({ field }) => (
-                    <FormItem className="col-span-12 md:col-span-3">
-                      <FormLabel>Complemento</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Complemento"
-                          {...field}
-                          onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="bairro"
-                  render={({ field }) => (
-                    <FormItem className="col-span-12 md:col-span-3">
-                      <FormLabel>Bairro</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Bairro"
-                          {...field}
-                          onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="cidade"
-                  render={({ field }) => (
-                    <FormItem className="col-span-12 md:col-span-4">
-                      <FormLabel>Cidade</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Cidade"
-                          {...field}
-                          onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="uf"
-                  render={({ field }) => (
-                    <FormItem className="col-span-12 md:col-span-2">
-                      <FormLabel>UF</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="UF"
-                          {...field}
-                          onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
+                  <FormField
+                    control={form.control}
+                    name="complemento"
+                    render={({ field }) => (
+                      <FormItem className="col-span-12 md:col-span-3">
+                        <FormLabel>Complemento</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Complemento"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(e.target.value.toUpperCase())
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="bairro"
+                    render={({ field }) => (
+                      <FormItem className="col-span-12 md:col-span-3">
+                        <FormLabel>Bairro</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Bairro"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(e.target.value.toUpperCase())
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="cidade"
+                    render={({ field }) => (
+                      <FormItem className="col-span-12 md:col-span-4">
+                        <FormLabel>Cidade</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Cidade"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(e.target.value.toUpperCase())
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="uf"
+                    render={({ field }) => (
+                      <FormItem className="col-span-12 md:col-span-2">
+                        <FormLabel>UF</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="UF"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(e.target.value.toUpperCase())
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
                 <Separator className="my-4" />
-                <div className="p-4 border rounded-lg mb-4">
-                  <h4 className="text-lg font-semibold">Endereço de Correspondência</h4>
+                <div className="mb-4 rounded-lg border p-4">
+                  <h4 className="text-lg font-semibold">
+                    Endereço de Correspondência
+                  </h4>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
                   <FormField
-                      control={form.control}
-                      name="correspCep"
-                      render={({ field }) => (
-                        <FormItem className="col-span-12 md:col-span-2">
-                          <FormLabel>CEP</FormLabel>
-                          <FormControl>
-                            <NumericFormat
-                              format="#####-###"
-                              mask="_"
-                              value={field.value}
-                              onValueChange={(values) => {
-                                field.onChange(values.formattedValue);
-                              }}
-                              customInput={Input}
-                              placeholder="00000-000"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="correspEndereco"
-                      render={({ field }) => (
-                        <FormItem className="col-span-12 md:col-span-8">
-                          <FormLabel>Endereço</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Endereço"
-                              {...field}
-                              onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="correspNumero"
-                      render={({ field }) => (
-                        <FormItem className="col-span-12 md:col-span-2">
-                          <FormLabel>Número</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Número"
-                              {...field}
-                              onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="correspComplemento"
-                      render={({ field }) => (
-                        <FormItem className="col-span-12 md:col-span-3">
-                          <FormLabel>Complemento</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Complemento"
-                              {...field}
-                              onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="correspBairro"
-                      render={({ field }) => (
-                        <FormItem className="col-span-12 md:col-span-3">
-                          <FormLabel>Bairro</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Bairro"
-                              {...field}
-                              onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="correspCidade"
-                      render={({ field }) => (
-                        <FormItem className="col-span-12 md:col-span-4">
-                          <FormLabel>Cidade</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Cidade"
-                              {...field}
-                              onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="correspUf"
-                      render={({ field }) => (
-                        <FormItem className="col-span-12 md:col-span-2">
-                          <FormLabel>UF</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="UF"
-                              {...field}
-                              onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    control={form.control}
+                    name="correspCep"
+                    render={({ field }) => (
+                      <FormItem className="col-span-12 md:col-span-2">
+                        <FormLabel>CEP</FormLabel>
+                        <FormControl>
+                          <NumericFormat
+                            format="#####-###"
+                            mask="_"
+                            value={field.value}
+                            onValueChange={(values) => {
+                              field.onChange(values.formattedValue);
+                            }}
+                            customInput={Input}
+                            placeholder="00000-000"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="correspEndereco"
+                    render={({ field }) => (
+                      <FormItem className="col-span-12 md:col-span-8">
+                        <FormLabel>Endereço</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Endereço"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(e.target.value.toUpperCase())
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="correspNumero"
+                    render={({ field }) => (
+                      <FormItem className="col-span-12 md:col-span-2">
+                        <FormLabel>Número</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Número"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(e.target.value.toUpperCase())
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
+                  <FormField
+                    control={form.control}
+                    name="correspComplemento"
+                    render={({ field }) => (
+                      <FormItem className="col-span-12 md:col-span-3">
+                        <FormLabel>Complemento</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Complemento"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(e.target.value.toUpperCase())
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="correspBairro"
+                    render={({ field }) => (
+                      <FormItem className="col-span-12 md:col-span-3">
+                        <FormLabel>Bairro</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Bairro"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(e.target.value.toUpperCase())
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="correspCidade"
+                    render={({ field }) => (
+                      <FormItem className="col-span-12 md:col-span-4">
+                        <FormLabel>Cidade</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Cidade"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(e.target.value.toUpperCase())
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="correspUf"
+                    render={({ field }) => (
+                      <FormItem className="col-span-12 md:col-span-2">
+                        <FormLabel>UF</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="UF"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(e.target.value.toUpperCase())
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </TabsContent>
               <TabsContent value="contato" className="space-y-4 py-4">
@@ -1289,32 +1421,32 @@ const UpsertClientForm = ({
                     )}
                   />
                 </div>
-            </TabsContent>
-          </Tabs>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={onSuccess}
-              className="w-35"
-            >
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : initialData ? (
-                "Salvar Alterações"
-              ) : (
-                "Criar Cliente"
-              )}
-            </Button>
-          </DialogFooter>
-        </form>
-      </Form>
-    </DialogContent>
+              </TabsContent>
+            </Tabs>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={onSuccess}
+                className="w-35"
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : initialData ? (
+                  "Salvar Alterações"
+                ) : (
+                  "Criar Cliente"
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
     </Dialog>
-  )
+  );
 };
 
 export default UpsertClientForm;

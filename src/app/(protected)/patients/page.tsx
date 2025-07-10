@@ -50,12 +50,10 @@ const PatientsPage = async ({ searchParams }: PatientsPageProps) => {
       <PageHeader>
         <PageHeaderContent>
           <PageTitle>Pacientes</PageTitle>
-          <PageDescription>
-            Cadastro de Colaboradores
-          </PageDescription>
+          <PageDescription>Cadastro de Colaboradores</PageDescription>
         </PageHeaderContent>
         <PageActions>
-          <AddPatientButton />
+          <AddPatientButton userRole={session.user.role ?? "user"} />
         </PageActions>
       </PageHeader>
       <PageContent>

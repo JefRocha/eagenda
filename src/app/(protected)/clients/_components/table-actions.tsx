@@ -1,8 +1,8 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { EditIcon, MoreVerticalIcon, TrashIcon } from "lucide-react";
 import { useAction } from "next-safe-action/hooks";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
 
 import { deleteClient } from "@/actions/delete-client";
 import {
@@ -58,7 +58,7 @@ const ClientsTableActions = ({ client }: ClientsTableActionsProps) => {
     <>
       <Sheet open={upsertSheetIsOpen} onOpenChange={setUpsertSheetIsOpen}>
         <DropdownMenu>
-          <DropdownMenuTrigger>
+          <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
               <MoreVerticalIcon className="h-4 w-4" />
             </Button>
@@ -109,4 +109,3 @@ const ClientsTableActions = ({ client }: ClientsTableActionsProps) => {
 };
 
 export default ClientsTableActions;
-

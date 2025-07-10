@@ -18,7 +18,11 @@ const AddPatientButton = () => {
           Adicionar paciente
         </Button>
       </DialogTrigger>
-      <UpsertPatientForm onSuccess={() => setIsOpen(false)} isOpen={isOpen} />
+      <UpsertPatientForm
+        onSuccess={() => setIsOpen(false)}
+        isOpen={isOpen}
+        userRole={userRole}
+      />
     </Dialog>
   );
 };

@@ -37,11 +37,13 @@ import {
 import { patientsTable } from "@/db/schema";
 
 const formSchema = upsertPatientSchema;
+const userRole = session?.user?.role ?? "user";
 
 interface UpsertPatientFormProps {
   isOpen: boolean;
   patient?: typeof patientsTable.$inferSelect;
   onSuccess?: () => void;
+  userRole: string;
 }
 
 const UpsertPatientForm = ({

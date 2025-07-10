@@ -33,6 +33,7 @@ const registerSchema = z.object({
     .string()
     .trim()
     .min(8, { message: "A senha deve ter pelo menos 8 caracteres" }),
+  role: z.string().trim(),
 });
 
 const SignUpForm = () => {
@@ -43,6 +44,7 @@ const SignUpForm = () => {
       name: "",
       email: "",
       password: "",
+      role: "",
     },
   });
 
@@ -52,6 +54,7 @@ const SignUpForm = () => {
         email: values.email,
         password: values.password,
         name: values.name,
+        role: "MASTER",
       },
       {
         onSuccess: () => {

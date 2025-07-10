@@ -8,7 +8,9 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 
 import UpsertClientForm from "./upsert-client-form";
 
-const AddClientButton = () => {
+interface AddClientButtonProps {}
+
+const AddClientButton = ({}: AddClientButtonProps) => {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -20,8 +22,8 @@ const AddClientButton = () => {
           </span>
         </Button>
       </DialogTrigger>
-        <UpsertClientForm onSuccess={() => setIsOpen(false)} isOpen={isOpen} />
-      </Dialog>
+      <UpsertClientForm onSuccess={() => setIsOpen(false)} isOpen={isOpen} />
+    </Dialog>
   );
 };
 

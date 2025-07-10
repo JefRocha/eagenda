@@ -21,34 +21,45 @@ export const auth = betterAuth({
   },
   plugins: [
     customSession(async ({ user, session }) => {
-      // TODO: colocar cache
-      const [userData, clinics] = await Promise.all([
-        db.query.usersTable.findFirst({
-          where: eq(usersTable.id, user.id),
-        }),
-        db.query.usersToClinicsTable.findMany({
-          where: eq(usersToClinicsTable.userId, user.id),
-          with: {
-            clinic: true,
-            user: true,
+      try {
+        const [userData, clinics] = await Promise.all([
+          db.query.usersTable.findFirst({
+            where: eq(usersTable.id, user.id),
+          }),
+          db.query.usersToClinicsTable.findMany({
+            where: eq(usersToClinicsTable.userId, user.id),
+            with: {
+              clinic: true,
+              user: true,
+            },
+          }),
+        ]);
+
+        if (!userData) {
+          console.error("Usuário não encontrado no banco:", user.id);
+          throw new Error("Usuário não encontrado.");
+        }
+
+        const clinic = clinics?.[0];
+
+        return {
+          user: {
+            ...user,
+            plan: userData.plan,
+            role: userData.role,
+            clinic: clinic?.clinicId
+              ? {
+                  id: clinic.clinicId,
+                  name: clinic.clinic?.name ?? "",
+                }
+              : undefined,
           },
-        }),
-      ]);
-      // TODO: Ao adaptar para o usuário ter múltiplas clínicas, deve-se mudar esse código
-      const clinic = clinics?.[0];
-      return {
-        user: {
-          ...user,
-          plan: userData?.plan,
-          clinic: clinic?.clinicId
-            ? {
-                id: clinic?.clinicId,
-                name: clinic?.clinic?.name,
-              }
-            : undefined,
-        },
-        session,
-      };
+          session,
+        };
+      } catch (error) {
+        console.error("Erro no customSession:", error);
+        throw error;
+      }
     }),
   ],
   user: {
@@ -67,6 +78,11 @@ export const auth = betterAuth({
       plan: {
         type: "string",
         fieldName: "plan",
+        required: false,
+      },
+      role: {
+        type: "string",
+        fieldName: "role",
         required: false,
       },
     },

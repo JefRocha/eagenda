@@ -11,7 +11,9 @@ import AddClientButton from "./add-client-button";
 import { SearchInput } from "./search-input";
 import { clientsTableColumns } from "./table-columns";
 
-export const ClientsList = () => {
+interface ClientsListProps {}
+
+export const ClientsList = ({}: ClientsListProps) => {
   const searchParams = useSearchParams();
 
   const search = searchParams.get("search");
@@ -37,10 +39,10 @@ export const ClientsList = () => {
   return (
     <>
       <div className="mb-4 flex w-full items-center gap-4">
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <SearchInput />
         </div>
-          <AddClientButton />
+        <AddClientButton />
       </div>
       <DataTable
         columns={clientsTableColumns}

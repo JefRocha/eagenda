@@ -17,7 +17,6 @@ const AuthenticationPage = async () => {
   }
   return (
     <div className="relative flex h-screen w-screen items-center justify-center overflow-hidden">
-      {/* Plano de fundo */}
       <Image
         src="/Principal.svg"
         alt="Plano de fundo"

@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/page-container";
 import { auth } from "@/lib/auth";
 
-import AddClientButton from "./_components/add-client-button";
 import { ClientsList } from "./_components/clients-list";
 
 const ClientsPage = async () => {
@@ -28,16 +27,15 @@ const ClientsPage = async () => {
     redirect("/clinic-form");
   }
 
+  const userRole = session.user.role ?? "user";
+
   return (
     <PageContainer>
       <PageHeader>
         <PageHeaderContent>
           <PageTitle>Clientes</PageTitle>
-          <PageDescription>
-            Gerencie os clientes da sua clínica
-          </PageDescription>
+          <PageDescription>Gerencie os clientes da sua clínica</PageDescription>
         </PageHeaderContent>
-        
       </PageHeader>
       <PageContent>
         <ClientsList />

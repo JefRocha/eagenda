@@ -11,8 +11,35 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
-//import { Inter_Tight } from "next/font/google";
 
+// 🔒 Enum de papéis de usuário
+export const userRoleEnum = pgEnum("user_role", [
+  "SUPER_ADMIN",
+  "MASTER",
+  "USER",
+]);
+export const exametipoEnum = pgEnum("exame_tipo", [
+  "ADMISSIONAL",
+  "PERIODICO",
+  "MUDANCA FUNCAO",
+  "RE. AO TRABALHO",
+  "DEMISSIONAL",
+  "OUTROS",
+  "PCMSO",
+  "PPRA",
+  "LCAT",
+  "PCMAT",
+  "ART",
+  "PCA",
+  "SESMET",
+  "CONSULTA MEDICA",
+  "ATESTADO SAN",
+  "HOMOL. ATESTADO",
+]);
+export const pedidoEnum = pgEnum("pedido", ["Sim", "Não"]);
+export const patientSexEnum = pgEnum("patient_sex", ["male", "female"]);
+
+// 👤 Tabela de Usuários
 export const usersTable = pgTable("users", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
@@ -22,6 +49,7 @@ export const usersTable = pgTable("users", {
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
   plan: text("plan"),
+  role: userRoleEnum("role").notNull().default("USER"), // 🆕 controle de acesso
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
 });
@@ -70,6 +98,7 @@ export const verificationsTable = pgTable("verifications", {
   updatedAt: timestamp("updated_at"),
 });
 
+// 🏥 Clínicas
 export const clinicsTable = pgTable("clinics", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),
@@ -106,8 +135,7 @@ export const usersToClinicsTableRelations = relations(
   }),
 );
 
-
-
+// 👨‍⚕️ Médicos
 export const doctorsTable = pgTable("doctors", {
   id: uuid("id").defaultRandom().primaryKey(),
   clinicId: uuid("clinic_id")
@@ -115,7 +143,6 @@ export const doctorsTable = pgTable("doctors", {
     .references(() => clinicsTable.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   avatarImageUrl: text("avatar_image_url"),
-  // 1 - Monday, 2 - Tuesday, 3 - Wednesday, 4 - Thursday, 5 - Friday, 6 - Saturday, 0 - Sunday
   availableFromWeekDay: integer("available_from_week_day").notNull(),
   availableToWeekDay: integer("available_to_week_day").notNull(),
   availableFromTime: time("available_from_time").notNull(),
@@ -139,12 +166,7 @@ export const doctorsTableRelations = relations(
   }),
 );
 
-export const exametipoEnum = pgEnum("exame_tipo", [
-  "Admissional",
-  "Demissional",
-]);
-export const pedidoEnum = pgEnum("pedido", ["Sim", "Não"]);
-
+// 🧪 Exames
 export const examesTable = pgTable("exames", {
   id: uuid("id").defaultRandom().primaryKey(),
   clinicId: uuid("clinic_id")
@@ -171,8 +193,7 @@ export const examesTableRelations = relations(examesTable, ({ one, many }) => ({
   appointments: many(appointmentsTable),
 }));
 
-export const patientSexEnum = pgEnum("patient_sex", ["male", "female"]);
-
+// 🧍 Pacientes
 export const patientsTable = pgTable("patients", {
   id: uuid("id").defaultRandom().primaryKey(),
   clinicId: uuid("clinic_id")
@@ -204,8 +225,8 @@ export const patientsTable = pgTable("patients", {
   pcd: text("pcd"),
   cod_anterior: text("cod_anterior"),
   phoneNumber: text("phone_number").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
   sex: patientSexEnum("sex").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
     .$onUpdate(() => new Date()),
@@ -222,6 +243,7 @@ export const patientsTableRelations = relations(
   }),
 );
 
+// 🧑‍💼 Clientes
 export const clientsTable = pgTable("clients", {
   id: serial("id").primaryKey(),
   clinicId: uuid("clinic_id")
@@ -303,6 +325,7 @@ export const clientsTableRelations = relations(clientsTable, ({ one }) => ({
   }),
 }));
 
+// 🔗 Relações de Clínica
 export const clinicsTableRelations = relations(clinicsTable, ({ many }) => ({
   doctors: many(doctorsTable),
   patients: many(patientsTable),
@@ -312,6 +335,7 @@ export const clinicsTableRelations = relations(clinicsTable, ({ many }) => ({
   clients: many(clientsTable),
 }));
 
+// 📅 Agendamentos
 export const appointmentsTable = pgTable("appointments", {
   id: uuid("id").defaultRandom().primaryKey(),
   date: timestamp("date").notNull(),
