@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs"; // Importar bcryptjs
 
 import { db } from "@/db";
-import { usersTable, usersToClinicsTable } from "@/db/schema";
+import { usersTable, usersToClinicsTable, accountsTable } from "@/db/schema"; // Add accountsTable
 import { auth } from "@/lib/auth";
 import { action } from "@/lib/next-safe-action";
 
@@ -31,14 +31,8 @@ export const upsertUser = action
       where: eq(usersTable.email, data.email),
     });
 
-    let hashedPassword = userToUpsert?.hashedPassword; // Manter a senha existente se não for fornecida uma nova
-
-    if (data.password) {
-      // Se uma nova senha for fornecida, gerar o hash
-      hashedPassword = await bcrypt.hash(data.password, 10);
-    }
-
     if (!userToUpsert) {
+      // Create new user
       const newUser = await db
         .insert(usersTable)
         .values({
@@ -47,24 +41,45 @@ export const upsertUser = action
           email: data.email,
           emailVerified: false,
           role: data.role,
-          hashedPassword: hashedPassword, // Adicionar a senha hasheada
           createdAt: new Date(),
           updatedAt: new Date(),
         })
         .returning();
       userToUpsert = newUser[0];
+
+      // If password is provided, create an account entry
+      if (data.password) {
+        const hashedPassword = await bcrypt.hash(data.password, 10);
+        await db.insert(accountsTable).values({
+          id: crypto.randomUUID(), // Generate a new ID for the account
+          userId: userToUpsert.id,
+          providerId: "credentials", // Or a suitable provider name
+          accountId: userToUpsert.email, // Or a unique identifier for the account
+          password: hashedPassword,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      }
     } else {
-      // Atualizar usuário existente
+      // Update existing user
       await db
         .update(usersTable)
         .set({
           name: data.name,
           email: data.email,
           role: data.role,
-          hashedPassword: hashedPassword, // Atualizar a senha hasheada se uma nova foi fornecida
           updatedAt: new Date(),
         })
         .where(eq(usersTable.id, userToUpsert.id));
+
+      // If password is provided, update the account entry
+      if (data.password) {
+        const hashedPassword = await bcrypt.hash(data.password, 10);
+        await db
+          .update(accountsTable)
+          .set({ password: hashedPassword, updatedAt: new Date() })
+          .where(and(eq(accountsTable.userId, userToUpsert.id), eq(accountsTable.providerId, "credentials"))); // Assuming "credentials" provider
+      }
     }
 
     if (!userToUpsert) {
