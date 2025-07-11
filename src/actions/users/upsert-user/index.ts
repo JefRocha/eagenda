@@ -1,12 +1,12 @@
 "use server";
 
+import bcrypt from "bcryptjs";
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers"; // Adicionado
-import bcrypt from "bcryptjs"; // Importar bcryptjs
+import { headers } from "next/headers";
 
 import { db } from "@/db";
-import { usersTable, usersToClinicsTable, accountsTable } from "@/db/schema"; // Add accountsTable
+import { accountsTable, usersTable, usersToClinicsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { action } from "@/lib/next-safe-action";
 
@@ -15,79 +15,57 @@ import { upsertUserSchema } from "./schema";
 export const upsertUser = action
   .inputSchema(upsertUserSchema)
   .action(async ({ parsedInput: data }) => {
-    console.log("Server Action: upsertUser started"); // Log de início
     const session = await auth.api.getSession({ headers: await headers() });
     const loggedInUser = session?.user;
-
     if (!loggedInUser || loggedInUser.role !== "MASTER") {
-      throw new Error("Unauthorized"); // Alterado para lançar Error
+      throw new Error("Unauthorized");
     }
-
     const clinicId = loggedInUser.clinic?.id;
+    if (!clinicId) throw new Error("Clinic não encontrada");
 
-    if (!clinicId) {
-      throw new Error("Clinic not found for the current user"); // Alterado para lançar Error
-    }
-
-    // Validação de senhas na Server Action
-    if (data.password && data.confirmPassword && data.password !== data.confirmPassword) {
-      throw new Error("As senhas não coincidem."); // Alterado para lançar Error
+    if (data.password !== data.confirmPassword) {
+      throw new Error("As senhas não coincidem.");
     }
     if (!data.id && !data.password) {
-      throw new Error("A senha é obrigatória para novos usuários."); // Alterado para lançar Error
+      throw new Error("Senha obrigatória para novos usuários.");
     }
-    if (!data.id && !data.confirmPassword) {
-      throw new Error("A confirmação da senha é obrigatória para novos usuários."); // Alterado para lançar Error
-    }
-    if (data.id && (data.password || data.confirmPassword)) {
-      if (!data.password) {
-        throw new Error("A senha é obrigatória para atualizar."); // Alterado para lançar Error
-      }
-      if (!data.confirmPassword) {
-        throw new Error("A confirmação da senha é obrigatória para atualizar."); // Alterado para lançar Error
-      }
-    }
-
 
     let userToUpsert = await db.query.usersTable.findFirst({
       where: eq(usersTable.email, data.email),
     });
 
     if (!userToUpsert) {
-      console.log("Server Action: Creating new user"); // Log de criação de novo usuário
-      // Create new user
-      const newUser = await db
-        .insert(usersTable)
-        .values({
-          id: crypto.randomUUID(),
-          name: data.name,
-          email: data.email,
-          emailVerified: false,
-          role: data.role,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        })
-        .returning();
-      userToUpsert = newUser[0];
-
-      // If password is provided, create an account entry
-      if (data.password) {
-        console.log("Server Action: Hashing and inserting new password"); // Log de hashing e inserção de senha
-        const hashedPassword = await bcrypt.hash(data.password, 10);
-        await db.insert(accountsTable).values({
-          id: crypto.randomUUID(), // Generate a new ID for the account
-          userId: userToUpsert.id,
-          providerId: "credentials", // Or a suitable provider name
-          accountId: userToUpsert.email, // Or a unique identifier for the account
-          password: hashedPassword,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+      // === NOVO USUÁRIO ===
+      try {
+        const res = await auth.api.signUpEmail({
+          body: {
+            email: data.email,
+            password: data.password!,
+            name: data.name,
+          },
+          headers: await headers(),
+          autoSignIn: false,
         });
+
+        if (!res.user) {
+          console.error("Auth API sem usuário:", res);
+          throw new Error("Falha ao criar usuário via autenticação.");
+        }
+
+        userToUpsert = res.user;
+
+        if (data.role && data.role !== userToUpsert.role) {
+          await db.update(usersTable)
+            .set({ role: data.role, updatedAt: new Date() })
+            .where(eq(usersTable.id, userToUpsert.id));
+        }
+      } catch (err) {
+        console.error("Erro auth.api.signUpEmail:", err);
+        throw new Error("Erro ao criar conta. Veja logs do servidor.");
       }
     } else {
-      console.log("Server Action: Updating existing user"); // Log de atualização de usuário existente
-      await db
-        .update(usersTable)
+      // === USUÁRIO EXISTENTE ===
+      await db.update(usersTable)
         .set({
           name: data.name,
           email: data.email,
@@ -96,37 +74,41 @@ export const upsertUser = action
         })
         .where(eq(usersTable.id, userToUpsert.id));
 
-      // If password is provided, update the account entry
       if (data.password) {
-        console.log("Server Action: Hashing and updating existing password"); // Log de hashing e atualização de senha
-        const hashedPassword = await bcrypt.hash(data.password, 10);
-        await db
-          .update(accountsTable)
-          .set({ password: hashedPassword, updatedAt: new Date() })
-          .where(and(eq(accountsTable.userId, userToUpsert.id), eq(accountsTable.providerId, "credentials"))); // Assuming "credentials" provider
+        const hash = await bcrypt.hash(data.password, 10);
+        const account = await db.query.accountsTable.findFirst({
+          where: and(
+            eq(accountsTable.userId, userToUpsert.id),
+            eq(accountsTable.providerId, "credentials"),
+          ),
+        });
+
+        if (account) {
+          await db.update(accountsTable)
+            .set({ password: hash, updatedAt: new Date() })
+            .where(eq(accountsTable.id, account.id));
+        } else {
+          await db.insert(accountsTable).values({
+            id: crypto.randomUUID(),
+            userId: userToUpsert.id,
+            providerId: "credentials",
+            accountId: data.email,
+            password: hash,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+        }
       }
     }
 
-    if (!userToUpsert) {
-      console.log("Server Action: Failed to create or find user after DB operation"); // Log de falha após operação DB
-      throw new Error("Failed to create or find user"); // Alterado para lançar Error
-    }
-
-    const existingLink = await db.query.usersToClinicsTable.findFirst({
+    // === RELAÇÃO COM CLÍNICA ===
+    const link = await db.query.usersToClinicsTable.findFirst({
       where: and(
         eq(usersToClinicsTable.userId, userToUpsert.id),
         eq(usersToClinicsTable.clinicId, clinicId),
       ),
     });
-
-    if (existingLink) {
-      console.log("Server Action: Updating existing user-clinic link"); // Log de atualização de link
-      await db
-        .update(usersTable)
-        .set({ role: data.role, updatedAt: new Date() })
-        .where(eq(usersTable.id, userToUpsert.id));
-    } else {
-      console.log("Server Action: Creating new user-clinic link"); // Log de criação de link
+    if (!link) {
       await db.insert(usersToClinicsTable).values({
         userId: userToUpsert.id,
         clinicId,
@@ -134,14 +116,10 @@ export const upsertUser = action
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-
-      await db
-        .update(usersTable)
-        .set({ role: data.role, updatedAt: new Date() })
-        .where(eq(usersTable.id, userToUpsert.id));
     }
 
     revalidatePath("/users");
-    console.log("Server Action: User upserted successfully"); // Log de sucesso
-    return { message: `User ${data.id ? "updated" : "created"} successfully` };
+    return {
+      message: `Usuário ${data.id ? "atualizado" : "criado"} com sucesso.`,
+    };
   });

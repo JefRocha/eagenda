@@ -49,7 +49,6 @@ export const usersTable = pgTable("users", {
   image: text("image"),
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
-  plan: text("plan"),
   role: userRoleEnum("role").notNull().default("USER"), // 🆕 controle de acesso
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").notNull(),
@@ -103,11 +102,13 @@ export const verificationsTable = pgTable("verifications", {
 export const clinicsTable = pgTable("clinics", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),
+  subscriptionPlan: text("subscription_plan").notNull().default("free"),
+  subscriptionStatus: text("subscription_status").notNull().default("active"),
+  subscriptionExpiresAt: timestamp("subscription_expires_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .defaultNow()
-    .$onUpdate(() => new Date()),
+  updatedAt: timestamp("updated_at").defaultNow().$onUpdate(() => new Date()),
 });
+
 
 export const usersToClinicsTable = pgTable("users_to_clinics", {
   userId: text("user_id")

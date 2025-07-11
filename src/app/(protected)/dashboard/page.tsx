@@ -31,6 +31,8 @@ interface DashboardPageProps {
   }>;
 }
 
+
+
 const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -41,9 +43,13 @@ const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
   if (!session.user.clinic) {
     redirect("/clinic-form");
   }
-  if (!session.user.plan) {
+  const plan   = session.user.clinic?.subscription_plan;
+  const status = session.user.clinic?.subscription_status;
+
+  if (!plan || status !== "active") {
     redirect("/new-subscription");
   }
+
   const { from, to } = await searchParams;
   if (!from || !to) {
     redirect(
