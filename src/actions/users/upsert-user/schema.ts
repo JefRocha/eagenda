@@ -15,6 +15,7 @@ export const upsertUserSchema = z.object({
     .min(8, { message: "A confirmação da senha deve ter pelo menos 8 caracteres." })
     .optional()
     .or(z.literal("")), // Permite string vazia para confirmação de senha opcional
+    permissions: z.array(z.string()).optional(),
 });
 
 export type UpsertUserSchema = z.infer<typeof upsertUserSchema>;

@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { getAllPermissions } from "@/actions/permissions/get-all";
 import {
   PageContainer,
   PageContent,
@@ -26,6 +27,8 @@ const UsersPage = async () => {
     redirect("/clinic-form");
   }
 
+  const permissions = await getAllPermissions();
+
   return (
     <PageContainer>
       <PageHeader>
@@ -35,7 +38,7 @@ const UsersPage = async () => {
         </PageHeaderContent>
       </PageHeader>
       <PageContent>
-        <UsersList />
+        <UsersList availablePermissions={permissions}/>
       </PageContent>
     </PageContainer>
   );

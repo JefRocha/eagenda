@@ -47,17 +47,21 @@ import {
 } from "@/components/ui/select";
 import { User } from "@/db/schema";
 import { useAction } from "@/hooks/use-action";
+import { PermissionsList } from "@/modules/permissions/permissions-list";
 
 interface UpsertUserFormProps {
   initialData?: User;
   isOpen: boolean;
   onClose: () => void;
+  availablePermissions: { id: string; name: string }[];
 }
 
 export const UpsertUserForm = ({
   initialData,
   isOpen,
   onClose,
+  availablePermissions = [],
+
 }: UpsertUserFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [errorAlertDialog, setErrorAlertDialog] = useState({
@@ -75,6 +79,7 @@ export const UpsertUserForm = ({
           role: initialData.role,
           password: "",
           confirmPassword: "",
+          permissions: [],
         }
       : {
           name: "",
@@ -82,6 +87,7 @@ export const UpsertUserForm = ({
           role: "USER",
           password: "",
           confirmPassword: "",
+          permissions: [],
         },
   });
 
@@ -194,6 +200,39 @@ export const UpsertUserForm = ({
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="permissions"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Permissões</FormLabel>
+                    <div className="grid grid-cols-2 gap-2">
+                      {availablePermissions?.map((permission) => (
+                        <label key={permission.id} className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            value={permission.id}
+                            checked={form.getValues("permissions")?.includes(permission.id)}
+                            onChange={(e) => {
+                              const current = form.getValues("permissions") || [];
+                              if (e.target.checked) {
+                                form.setValue("permissions", [...current, permission.id]);
+                              } else {
+                                form.setValue(
+                                  "permissions",
+                                  current.filter((p) => p !== permission.id),
+                                );
+                              }
+                            }}
+                          />
+                          {permission.name}
+                        </label>
+                      ))}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               {!initialData && (
                 <div className="flex gap-4">
                   <FormField
@@ -249,6 +288,7 @@ export const UpsertUserForm = ({
                       </FormItem>
                     )}
                   />
+                  
                 </div>
               )}
               <DialogFooter>

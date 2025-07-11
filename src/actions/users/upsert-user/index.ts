@@ -7,6 +7,7 @@ import { headers } from "next/headers";
 
 import { db } from "@/db";
 import { accountsTable, usersTable, usersToClinicsTable } from "@/db/schema";
+import { userPermissionsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { action } from "@/lib/next-safe-action";
 
@@ -108,6 +109,7 @@ export const upsertUser = action
         eq(usersToClinicsTable.clinicId, clinicId),
       ),
     });
+
     if (!link) {
       await db.insert(usersToClinicsTable).values({
         userId: userToUpsert.id,
@@ -116,6 +118,27 @@ export const upsertUser = action
         createdAt: new Date(),
         updatedAt: new Date(),
       });
+    }
+
+    // === PERMISSÕES ===
+    if (data.permissions && data.permissions.length > 0) {
+      // Limpa permissões antigas do usuário para essa clínica
+      await db.delete(userPermissionsTable).where(
+        and(
+          eq(userPermissionsTable.userId, userToUpsert.id),
+          eq(userPermissionsTable.clinicId, clinicId),
+        ),
+      );
+
+      // Insere novas permissões
+      const permissionsToInsert = data.permissions.map((permissionId) => ({
+        userId: userToUpsert.id,
+        permissionId,
+        clinicId,
+        createdAt: new Date(),
+      }));
+
+      await db.insert(userPermissionsTable).values(permissionsToInsert);
     }
 
     revalidatePath("/users");
