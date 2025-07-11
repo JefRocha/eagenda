@@ -67,7 +67,7 @@ const LoginForm = () => {
   };
 
   return (
-    <Card className="border-none bg-black/15">
+    <Card className="w-full border-none bg-black/15 sm:w-[400px]">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
           <CardHeader>
@@ -84,7 +84,11 @@ const LoginForm = () => {
                 <FormItem>
                   <FormLabel className="text-gray-300">E-mail</FormLabel>
                   <FormControl>
-                    <Input placeholder="Digite seu e-mail" {...field} />
+                    <Input
+                      placeholder="Digite seu e-mail"
+                      {...field}
+                      className="login-input border-gray-600 bg-black/20 text-gray-300 placeholder:text-gray-400"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -101,6 +105,7 @@ const LoginForm = () => {
                       placeholder="Digite sua senha"
                       type="password"
                       {...field}
+                      className="border-gray-600 bg-black/20 text-gray-300 placeholder:text-gray-400"
                     />
                   </FormControl>
                   <FormMessage />
@@ -112,7 +117,7 @@ const LoginForm = () => {
             <div className="w-full space-y-2">
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full bg-blue-600 hover:bg-blue-700"
                 disabled={form.formState.isSubmitting}
               >
                 {form.formState.isSubmitting ? (

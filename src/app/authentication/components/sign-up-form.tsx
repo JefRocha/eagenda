@@ -72,12 +72,14 @@ const SignUpForm = () => {
   }
 
   return (
-    <Card>
+    <Card className="w-full border-none bg-black/15 sm:w-[400px]">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <CardHeader>
-            <CardTitle>Criar conta</CardTitle>
-            <CardDescription>Crie uma conta para continuar.</CardDescription>
+            <CardTitle className="text-gray-300">Criar conta</CardTitle>
+            <CardDescription className="text-gray-300">
+              Crie uma conta para continuar.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <FormField
@@ -85,9 +87,13 @@ const SignUpForm = () => {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome</FormLabel>
+                  <FormLabel className="text-gray-300">Nome</FormLabel>
                   <FormControl>
-                    <Input placeholder="Digite seu nome" {...field} />
+                    <Input
+                      placeholder="Digite seu nome"
+                      {...field}
+                      className="border-gray-600 bg-black/20 text-gray-300 placeholder:text-gray-400"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -98,9 +104,13 @@ const SignUpForm = () => {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>E-mail</FormLabel>
+                  <FormLabel className="text-gray-300">E-mail</FormLabel>
                   <FormControl>
-                    <Input placeholder="Digite seu e-mail" {...field} />
+                    <Input
+                      placeholder="Digite seu e-mail"
+                      {...field}
+                      className="border-gray-600 bg-black/20 text-gray-300 placeholder:text-gray-400"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -111,12 +121,13 @@ const SignUpForm = () => {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Senha</FormLabel>
+                  <FormLabel className="text-gray-300">Senha</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="Digite sua senha"
                       type="password"
                       {...field}
+                      className="border-gray-600 bg-black/20 text-gray-300 placeholder:text-gray-400"
                     />
                   </FormControl>
                   <FormMessage />
@@ -127,7 +138,7 @@ const SignUpForm = () => {
           <CardFooter>
             <Button
               type="submit"
-              className="w-full"
+              className="w-full bg-blue-600 hover:bg-blue-700"
               disabled={form.formState.isSubmitting}
             >
               {form.formState.isSubmitting ? (

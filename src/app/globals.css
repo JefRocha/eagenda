@@ -119,3 +119,18 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+@layer utilities {
+  .login-input:-webkit-autofill {
+    @apply bg-black/20 border-gray-600;
+    -webkit-text-fill-color: #d1d5db !important;
+    transition: background-color 5000s ease-in-out 0s;
+    box-shadow: 0 0 0px 1000px rgba(0, 0, 0, 0.2) inset;
+  }
+
+  .login-input:-webkit-autofill::placeholder {
+    color: #9ca3af;
+  }
+}
+
