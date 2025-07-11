@@ -10,14 +10,11 @@ export const upsertUserSchema = z.object({
     .min(6, { message: "A senha deve ter pelo menos 6 caracteres." })
     .optional()
     .or(z.literal("")), // Permite string vazia para senha opcional
-}).superRefine((data, ctx) => {
-  if (!data.id && !data.password) { // Se estiver criando um novo usuário e nenhuma senha for fornecida
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "A senha é obrigatória para novos usuários.",
-      path: ["password"],
-    });
-  }
+  confirmPassword: z
+    .string()
+    .min(6, { message: "A confirmação da senha deve ter pelo menos 6 caracteres." })
+    .optional()
+    .or(z.literal("")), // Permite string vazia para confirmação de senha opcional
 });
 
 export type UpsertUserSchema = z.infer<typeof upsertUserSchema>;

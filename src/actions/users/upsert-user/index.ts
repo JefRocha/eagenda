@@ -27,6 +27,26 @@ export const upsertUser = action
       throw new Error("Clinic not found for the current user");
     }
 
+    // Validação de senhas na Server Action
+    if (data.password && data.confirmPassword && data.password !== data.confirmPassword) {
+      throw new Error("As senhas não coincidem.");
+    }
+    if (!data.id && !data.password) {
+      throw new Error("A senha é obrigatória para novos usuários.");
+    }
+    if (!data.id && !data.confirmPassword) {
+      throw new Error("A confirmação da senha é obrigatória para novos usuários.");
+    }
+    if (data.id && (data.password || data.confirmPassword)) {
+      if (!data.password) {
+        throw new Error("A senha é obrigatória para atualizar.");
+      }
+      if (!data.confirmPassword) {
+        throw new Error("A confirmação da senha é obrigatória para atualizar.");
+      }
+    }
+
+
     let userToUpsert = await db.query.usersTable.findFirst({
       where: eq(usersTable.email, data.email),
     });
