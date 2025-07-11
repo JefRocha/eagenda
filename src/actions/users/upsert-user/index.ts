@@ -2,6 +2,7 @@
 
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers"; // Adicionado
 import bcrypt from "bcryptjs"; // Importar bcryptjs
 
 import { db } from "@/db";
@@ -14,35 +15,36 @@ import { upsertUserSchema } from "./schema";
 export const upsertUser = action
   .inputSchema(upsertUserSchema)
   .action(async ({ parsedInput: data }) => {
+    console.log("Server Action: upsertUser started"); // Log de início
     const session = await auth.api.getSession({ headers: await headers() });
     const loggedInUser = session?.user;
 
     if (!loggedInUser || loggedInUser.role !== "MASTER") {
-      throw new Error("Unauthorized");
+      throw new Error("Unauthorized"); // Alterado para lançar Error
     }
 
     const clinicId = loggedInUser.clinic?.id;
 
     if (!clinicId) {
-      throw new Error("Clinic not found for the current user");
+      throw new Error("Clinic not found for the current user"); // Alterado para lançar Error
     }
 
     // Validação de senhas na Server Action
     if (data.password && data.confirmPassword && data.password !== data.confirmPassword) {
-      throw new Error("As senhas não coincidem.");
+      throw new Error("As senhas não coincidem."); // Alterado para lançar Error
     }
     if (!data.id && !data.password) {
-      throw new Error("A senha é obrigatória para novos usuários.");
+      throw new Error("A senha é obrigatória para novos usuários."); // Alterado para lançar Error
     }
     if (!data.id && !data.confirmPassword) {
-      throw new Error("A confirmação da senha é obrigatória para novos usuários.");
+      throw new Error("A confirmação da senha é obrigatória para novos usuários."); // Alterado para lançar Error
     }
     if (data.id && (data.password || data.confirmPassword)) {
       if (!data.password) {
-        throw new Error("A senha é obrigatória para atualizar.");
+        throw new Error("A senha é obrigatória para atualizar."); // Alterado para lançar Error
       }
       if (!data.confirmPassword) {
-        throw new Error("A confirmação da senha é obrigatória para atualizar.");
+        throw new Error("A confirmação da senha é obrigatória para atualizar."); // Alterado para lançar Error
       }
     }
 
@@ -52,6 +54,7 @@ export const upsertUser = action
     });
 
     if (!userToUpsert) {
+      console.log("Server Action: Creating new user"); // Log de criação de novo usuário
       // Create new user
       const newUser = await db
         .insert(usersTable)
@@ -69,6 +72,7 @@ export const upsertUser = action
 
       // If password is provided, create an account entry
       if (data.password) {
+        console.log("Server Action: Hashing and inserting new password"); // Log de hashing e inserção de senha
         const hashedPassword = await bcrypt.hash(data.password, 10);
         await db.insert(accountsTable).values({
           id: crypto.randomUUID(), // Generate a new ID for the account
@@ -81,7 +85,7 @@ export const upsertUser = action
         });
       }
     } else {
-      // Update existing user
+      console.log("Server Action: Updating existing user"); // Log de atualização de usuário existente
       await db
         .update(usersTable)
         .set({
@@ -94,6 +98,7 @@ export const upsertUser = action
 
       // If password is provided, update the account entry
       if (data.password) {
+        console.log("Server Action: Hashing and updating existing password"); // Log de hashing e atualização de senha
         const hashedPassword = await bcrypt.hash(data.password, 10);
         await db
           .update(accountsTable)
@@ -103,7 +108,8 @@ export const upsertUser = action
     }
 
     if (!userToUpsert) {
-      throw new Error("Failed to create or find user");
+      console.log("Server Action: Failed to create or find user after DB operation"); // Log de falha após operação DB
+      throw new Error("Failed to create or find user"); // Alterado para lançar Error
     }
 
     const existingLink = await db.query.usersToClinicsTable.findFirst({
@@ -114,11 +120,13 @@ export const upsertUser = action
     });
 
     if (existingLink) {
+      console.log("Server Action: Updating existing user-clinic link"); // Log de atualização de link
       await db
         .update(usersTable)
         .set({ role: data.role, updatedAt: new Date() })
         .where(eq(usersTable.id, userToUpsert.id));
     } else {
+      console.log("Server Action: Creating new user-clinic link"); // Log de criação de link
       await db.insert(usersToClinicsTable).values({
         userId: userToUpsert.id,
         clinicId,
@@ -134,6 +142,6 @@ export const upsertUser = action
     }
 
     revalidatePath("/users");
-
+    console.log("Server Action: User upserted successfully"); // Log de sucesso
     return { message: `User ${data.id ? "updated" : "created"} successfully` };
   });

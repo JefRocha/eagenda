@@ -93,9 +93,10 @@ export const UpsertUserForm = ({
       onClose();
     },
     onError: (error) => {
+      console.log(error); // Adicionado para depuração
       setErrorAlertDialog({
         isOpen: true,
-        message: error.serverError || "Ocorreu um erro inesperado.",
+        message: error.message || error.serverError || "Ocorreu um erro inesperado.",
       });
     },
   });
